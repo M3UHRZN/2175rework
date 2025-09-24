@@ -12,6 +12,7 @@ public class Sensors2D : MonoBehaviour
     
     [Header("Ledge Probe")]
     public float ledgeProbeDistance = 0.3f; // ledge probe'un ne kadar ileriye bakacağı
+    public float ledgeProbeHeight = 0.0f;   // ledge probe'un ne kadar yüksekte olacağı (karakter merkezinden)
 
     [Header("Layer Masks")]
     public LayerMask solidMask;       // Ground | OneWay | MovingPlatform (solid)
@@ -46,6 +47,7 @@ public class Sensors2D : MonoBehaviour
     bool prevGrounded;
     LocomotionMotor2D motor;
     int lastFacingSign = 1; // Cache için
+    float lastPlayerY = 0f; // Yükseklik cache için
 
     void Awake()
     {
@@ -78,13 +80,15 @@ public class Sensors2D : MonoBehaviour
         activeLedge = null;
         isLedge = false;
         
-        // LedgeProbe'u sadece facing değiştiğinde konumlandır (optimizasyon)
-        if (ledgeProbe && motor && motor.facingSign != lastFacingSign)
+        // LedgeProbe'u facing veya yükseklik değiştiğinde konumlandır
+        if (ledgeProbe && motor && (motor.facingSign != lastFacingSign || Mathf.Abs(transform.position.y - lastPlayerY) > 0.1f))
         {
             Vector3 probePos = transform.position;
             probePos.x += motor.facingSign * ledgeProbeDistance;
+            probePos.y += ledgeProbeHeight; // Yükseklik ayarı
             ledgeProbe.position = probePos;
             lastFacingSign = motor.facingSign;
+            lastPlayerY = transform.position.y;
         }
         
         var hitL = Physics2D.OverlapCircle(ledgeProbe.position, 0.12f, ledgeMask);

@@ -8,6 +8,10 @@ public class LedgeHangController : MonoBehaviour
     Sensors2D sensors;
     LocomotionMotor2D motor;
     PlayerStateMachine fsm;
+    
+    // Akıllı ledge detection için
+    Vector2 lastWallClimbPos;
+    const float MIN_LEDGE_DISTANCE = 1.0f; // Minimum ledge mesafesi
 
     void Awake()
     {
@@ -21,9 +25,31 @@ public class LedgeHangController : MonoBehaviour
     {
         if (sensors.isGrounded) return;
 
-        // Grab
+        // Grab - akıllı koşullar
         if (sensors.isLedge && fsm.Current != PlayerStateMachine.LocoState.LedgeHang)
         {
+            // Wall climb sırasında akıllı ledge detection
+            if (fsm.Current == PlayerStateMachine.LocoState.WallClimb)
+            {
+                Vector2 ledgePos = sensors.activeLedge ? sensors.activeLedge.WorldHangPoint : (Vector2)transform.position;
+                
+                // 1. Sadece yukarıdaki ledge'leri kabul et
+                if (ledgePos.y <= transform.position.y + 0.5f)
+                {
+                    return; // Aşağıdaki ledge'leri görmezden gel
+                }
+                
+                // 2. Minimum mesafe kontrolü (aynı ledge'e tekrar tutunmayı önle)
+                float distance = Vector2.Distance(ledgePos, lastWallClimbPos);
+                if (distance < MIN_LEDGE_DISTANCE)
+                {
+                    return; // Çok yakın ledge'leri görmezden gel
+                }
+                
+                // 3. Wall climb pozisyonunu güncelle
+                lastWallClimbPos = transform.position;
+            }
+            
             Vector2 snap = sensors.activeLedge ? sensors.activeLedge.WorldHangPoint
                                                : (Vector2)transform.position; // fallback
             int face = sensors.activeLedge ? Mathf.Clamp(sensors.activeLedge.preferFacing, -1, 1) : 0;
@@ -58,5 +84,11 @@ public class LedgeHangController : MonoBehaviour
                 fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "LedgeDrop");
             }
         }
+    }
+    
+    // Wall climb çıkışında pozisyonu sıfırla
+    public void OnWallClimbExit()
+    {
+        lastWallClimbPos = Vector2.zero;
     }
 }

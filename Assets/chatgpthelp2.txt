@@ -1,0 +1,237 @@
+
+şimdi istenen “**duvara tırmanma**” özelliğini ekliyorum ve **tam PlayerState**’i güncelliyorum. Aşağıda SADECE ek/patch’ler var (önceki kodun üstüne koy).
+
+---
+
+# 🧱 Yeni Layer ve Kavram
+
+* **Climbable** *(Trigger layer)*: Duvarın **katı** Ground collider’ına ek olarak, kenara **child Trigger** ekle (`Layer=Climbable`, `IsTrigger=on`).
+
+  > Böylece oyuncu duvardan **geçmez**, ama “tırmanılabilir” bilgisini trigger’dan alır.
+
+---
+
+# 🧠 PlayerState — Güncel Tam Liste (HFSM)
+
+```
+Grounded
+ ├─ Idle
+ └─ Run
+Airborne
+ ├─ JumpRise
+ └─ JumpFall
+WallSlide
+WallClimb        <-- YENİ
+LedgeHang
+Climb (Ladder/Rope)
+```
+
+**Kısa Fazlar:** `WallJump`, `LedgeClimb`, `DropThrough`
+**Öncelik:** `LedgeHang > WallClimb > WallSlide > Climb(Ladder) > Airborne > Grounded`
+
+**Giriş/Çıkış (özet):**
+
+* **WallClimb (yeni)**
+
+  * *Giriş:* `wallLeft/right && onClimbable(side) && (|MoveY|>0.1f veya MoveX duvar yönüne)`
+  * *Davranış:* Gravity **off**, `velY = MoveY * wallClimbSpeed`, yatay hareket kilit.
+  * *Çıkış:* Climbable biter → `WallSlide` (duvar varsa) ya da `JumpFall`. `Jump` → `JumpRise` (duvardan ayrılarak).
+
+---
+
+# 🔧 Kod Ekleri / Değişiklikler
+
+## 1) Yeni Config: `WallClimbConfig.cs`
+
+```csharp
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Configs/WallClimbConfig")]
+public class WallClimbConfig : ScriptableObject
+{
+    [Min(0f)] public float climbSpeed = 3.5f;    // dikey hız
+    [Range(0f, 1f)] public float stickFriction = 0.15f; // yatay kaymayı bastırma
+    public float enterMinMoveY = 0.1f;           // tetiğe girmek için min Up/Down
+}
+```
+
+## 2) `Sensors2D.cs` — **Climbable** algısı eklendi (PATCH)
+
+```csharp
+// ... class Sensors2D içinde:
+public LayerMask climbableMask;   // << YENİ
+
+public bool onClimbableLeft  { get; private set; } // << YENİ
+public bool onClimbableRight { get; private set; } // << YENİ
+public bool onClimbableAny   => onClimbableLeft || onClimbableRight; // << YENİ
+
+public void Sample()
+{
+    // ... mevcut yerler aynı
+
+    // --- Climbable (trigger) — sol/sağ duvar köşelerinde küçük kapsülle kontrol
+    onClimbableLeft  = Physics2D.OverlapCircle(wallL.position, 0.12f, climbableMask);
+    onClimbableRight = Physics2D.OverlapCircle(wallR.position, 0.12f, climbableMask);
+
+    // ... kalanlar aynı (Interactable vs.)
+}
+```
+
+> **Inspector:** `climbableMask = Climbable` layer’ını içerir.
+
+## 3) Motor: `LocomotionMotor2D.cs` — **WallClimb** destek (PATCH)
+
+```csharp
+// class alanlarına ekle:
+public WallClimbConfig wallClimbCfg;   // << YENİ
+
+bool wallClimbing;                      // << YENİ
+int  wallClimbDir;                      // -1 sol, +1 sağ  (YENİ)
+float wallClimbV;                       // hedef dikey hız (YENİ)
+
+// Requests (yeni):
+public void RequestWallClimb(int dir, float vSpeed)
+{
+    wallClimbing = true;
+    wallClimbDir = Mathf.Clamp(dir, -1, 1);
+    wallClimbV   = vSpeed;
+    rb.gravityScale = 0f;
+    // yüzeye yapışmayı artırmak için hafif içe doğru çek
+    var v = rb.velocity; v.x = Mathf.Lerp(v.x, 0f, wallClimbCfg ? wallClimbCfg.stickFriction : 0.15f);
+    rb.velocity = v;
+}
+
+public void StopWallClimbRestoreGravity()
+{
+    wallClimbing = false;
+    rb.gravityScale = movement ? movement.gravityScale : 3.5f;
+}
+
+// PhysicsStep içinde, hanging/climbing kontrollerinden sonra, CLIMB LADDER bloğundan önce:
+if (wallClimbing)
+{
+    // yatay sabit, dikey kontrol: MoveY motor dışından setlenir (controller hesaplar)
+    rb.velocity = new Vector2(0f, wallClimbV);
+    return;
+}
+
+// PhysicsStep sonunda, frame-lik istekleri temizlerken:
+wallSlideRequested = false;
+// wallClimbing burada TEMİZLENMEZ; kontrolcü kapatana kadar devam eder
+```
+
+## 4) Yeni denetleyici: `WallClimbController.cs`
+
+```csharp
+using UnityEngine;
+
+[DisallowMultipleComponent]
+public class WallClimbController : MonoBehaviour
+{
+    public WallClimbConfig cfg;
+
+    InputAdapter input;
+    Sensors2D s;
+    LocomotionMotor2D motor;
+    PlayerStateMachine fsm;
+
+    void Awake()
+    {
+        input = GetComponent<InputAdapter>();
+        s     = GetComponent<Sensors2D>();
+        motor = GetComponent<LocomotionMotor2D>();
+        fsm   = GetComponent<PlayerStateMachine>();
+    }
+
+    public void Tick(float dt)
+    {
+        // girmek için: duvar + climbable + kullanıcı isteği (Up/Down veya duvar yönüne itme)
+        int dir = 0;
+        bool want = Mathf.Abs(input.MoveY) > cfg.enterMinMoveY;
+        if (s.wallLeft && s.onClimbableLeft && (want || input.MoveX < -0.1f))  dir = -1;
+        if (s.wallRight && s.onClimbableRight && (want || input.MoveX >  0.1f)) dir = +1;
+
+        if (dir != 0)
+        {
+            float v = input.MoveY * cfg.climbSpeed; // yukarı/asağı
+            motor.RequestWallClimb(dir, v);
+            fsm.RequestTransition(PlayerStateMachine.LocoState.WallClimb, "WallClimb");
+        }
+
+        // WallClimb aktifken kontroller
+        if (fsm.Current == PlayerStateMachine.LocoState.WallClimb)
+        {
+            // dikey hız güncelle
+            motor.RequestWallClimb(dir != 0 ? dir : (s.wallLeft ? -1 : (s.wallRight ? 1 : 0)),
+                                   input.MoveY * cfg.climbSpeed);
+
+            // ayrılma koşulları
+            if (!(s.onClimbableAny && (s.wallLeft || s.wallRight)))
+            {
+                motor.StopWallClimbRestoreGravity();
+                // duvar var ama climbable yoksa WallSlide'a düş, değilse JumpFall
+                if (!s.isGrounded && (s.wallLeft || s.wallRight))
+                    fsm.RequestTransition(PlayerStateMachine.LocoState.WallSlide, "ExitWallClimb->Slide");
+                else
+                    fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "ExitWallClimb");
+            }
+            else if (input.JumpPressed)
+            {
+                motor.StopWallClimbRestoreGravity();
+                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "WallClimbJump");
+            }
+        }
+    }
+}
+```
+
+## 5) `AbilityController.cs` — Öncelik sırasına **WallClimb** ekle (PATCH)
+
+```csharp
+// Awake() içinde:
+var wallClimb = GetComponent<WallClimbController>();
+
+// Tick() içinde, öncelik sırası:
+ledge?.Tick(dt);
+wallClimb?.Tick(dt);   // << YENİ — Ledge’den sonra, WallSlide’dan önce
+wall?.Tick(dt);
+climb?.Tick(dt);
+jump?.Tick(dt);
+interact?.Tick(dt);
+```
+
+## 6) `PlayerStateMachine.cs` — state enum’una ek (PATCH)
+
+```csharp
+public enum LocoState { Idle, Run, JumpRise, JumpFall, WallSlide, WallClimb, LedgeHang, Climb }
+```
+
+## 7) `AnimationStateSync.cs` — yeni bool (PATCH)
+
+```csharp
+// LateSync():
+anim.SetBool("WallClimbing", fsm.Current == PlayerStateMachine.LocoState.WallClimb);
+```
+
+> Animator’a yeni bir bool param: **`WallClimbing`** ekleyebilirsin (opsiyonel).
+
+## 8) `PlayerOrchestrator.cs` — hiçbir değişiklik gerekmez
+
+(Referans olarak `WallClimbController` bileşeni eklenecek; Orchestrator generic çalışıyor.)
+
+---
+
+# 📄 README GÜNCELLEME (kısa)
+
+* **Yeni Layer:** `Climbable` (Trigger).
+
+  * Duvar prefab’ında **child** oluştur → `BoxCollider2D (IsTrigger=on, Layer=Climbable)` → tırmanılabilir şerit.
+* **Sensors2D mask’ları:** `climbableMask = Climbable`.
+* **Yeni ScriptableObject:** `WallClimbConfig` oluştur ve `WallClimbController` ile `LocomotionMotor2D`’ye ata.
+* **Player bileşenleri:** `WallClimbController` ekle (cfg bağla).
+* **Animator (ops):** Bool **WallClimbing** paramı ekle; wall-climb animine bağla.
+* **Öncelik:** Ledge > **WallClimb** > WallSlide > Ladder > Jump > Ground/Air.
+
+---
+
+hepsi bu. bu yamalarla oyuncu **duvara tırmanabilir** (Up/Down ile, yalnız “Climbable” trigger’ı olan duvarlarda), **state makinen** güncel ve animasyon bayrakları hazır.

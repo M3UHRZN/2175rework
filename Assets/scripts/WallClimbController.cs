@@ -10,6 +10,7 @@ public class WallClimbController : MonoBehaviour
     Sensors2D s;
     LocomotionMotor2D motor;
     PlayerStateMachine fsm;
+    LedgeHangController ledgeController;
     
     // Wall climb state tracking
     int currentWallDir = 0; // -1 sol, +1 sağ, 0 yok
@@ -20,6 +21,7 @@ public class WallClimbController : MonoBehaviour
         s     = GetComponent<Sensors2D>();
         motor = GetComponent<LocomotionMotor2D>();
         fsm   = GetComponent<PlayerStateMachine>();
+        ledgeController = GetComponent<LedgeHangController>();
     }
 
     public void Tick(float dt)
@@ -41,6 +43,9 @@ public class WallClimbController : MonoBehaviour
                     fsm.RequestTransition(PlayerStateMachine.LocoState.WallSlide, "ExitWallClimb->Slide");
                 else
                     fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "ExitWallClimb");
+                
+                // Ledge detection pozisyonunu sıfırla
+                ledgeController?.OnWallClimbExit();
             }
             else if (input.JumpPressed)
             {
@@ -52,6 +57,9 @@ public class WallClimbController : MonoBehaviour
                 Vector2 outDir = new Vector2(-currentWallDir * Mathf.Cos(a), Mathf.Sin(a)).normalized;
                 motor.RequestWallJump(outDir * (wallCfg ? wallCfg.wallJumpImpulse : 10f));
                 fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "WallClimbJump");
+                
+                // Ledge detection pozisyonunu sıfırla
+                ledgeController?.OnWallClimbExit();
             }
             return; // Wall climb aktifken giriş kontrolü yapma
         }
