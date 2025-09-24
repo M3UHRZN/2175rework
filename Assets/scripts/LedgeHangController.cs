@@ -24,7 +24,7 @@ public class LedgeHangController : MonoBehaviour
     public void Tick(float dt)
     {
         if (sensors.isGrounded) return;
-
+        
         // Grab - akıllı koşullar
         if (sensors.isLedge && fsm.Current != PlayerStateMachine.LocoState.LedgeHang)
         {
