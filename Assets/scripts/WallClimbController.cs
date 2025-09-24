@@ -44,8 +44,6 @@ public class WallClimbController : MonoBehaviour
                 else
                     fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "ExitWallClimb");
                 
-                // Ledge detection pozisyonunu sıfırla
-                ledgeController?.OnWallClimbExit();
             }
             else if (input.JumpPressed)
             {
@@ -58,8 +56,6 @@ public class WallClimbController : MonoBehaviour
                 motor.RequestWallJump(outDir * (wallCfg ? wallCfg.wallJumpImpulse : 10f));
                 fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "WallClimbJump");
                 
-                // Ledge detection pozisyonunu sıfırla
-                ledgeController?.OnWallClimbExit();
             }
             return; // Wall climb aktifken giriş kontrolü yapma
         }
