@@ -8,18 +8,12 @@ public class Sensors2D : MonoBehaviour
     public Transform head;
     public Transform wallL;
     public Transform wallR;
-    public Transform ledgeProbe; // göğüs/baş hizası, ileri uca yakın
-    
-    [Header("Ledge Probe")]
-    public float ledgeProbeDistance = 0.3f; // ledge probe'un ne kadar ileriye bakacağı
-    public float ledgeProbeHeight = 0.0f;   // ledge probe'un ne kadar yüksekte olacağı (karakter merkezinden)
 
     [Header("Layer Masks")]
     public LayerMask solidMask;       // Ground | OneWay | MovingPlatform (solid)
     public LayerMask oneWayMask;      // sadece OneWay
     public LayerMask wallMask;        // genelde Ground ile aynı
     public LayerMask ladderMask;      // Ladder (trigger)
-    public LayerMask ledgeMask;       // Ledge (trigger)
     public LayerMask interactMask;    // Interactable (trigger)
     public LayerMask climbableMask;   // Climbable (trigger)
 
@@ -37,21 +31,15 @@ public class Sensors2D : MonoBehaviour
     public bool wallRight { get; private set; }
     public bool onOneWay { get; private set; }
     public bool onLadder { get; private set; }
-    public bool isLedge  { get; private set; }
-    public LedgeMarker activeLedge { get; private set; }
     public Interactable nearestInteractable { get; private set; }
     public bool onClimbableLeft  { get; private set; }
     public bool onClimbableRight { get; private set; }
     public bool onClimbableAny   => onClimbableLeft || onClimbableRight;
 
     bool prevGrounded;
-    LocomotionMotor2D motor;
-    int lastFacingSign = 1; // Cache için
-    float lastPlayerY = 0f; // Yükseklik cache için
 
     void Awake()
     {
-        motor = GetComponent<LocomotionMotor2D>();
     }
 
     public void Sample()
@@ -76,38 +64,6 @@ public class Sensors2D : MonoBehaviour
         onClimbableLeft  = Physics2D.OverlapCircle(wallL.position, 0.12f, climbableMask);
         onClimbableRight = Physics2D.OverlapCircle(wallR.position, 0.12f, climbableMask);
 
-        // Ledge (trigger first, then geometric fallback)
-        activeLedge = null;
-        isLedge = false;
-        
-        // LedgeProbe'u facing veya yükseklik değiştiğinde konumlandır
-        if (ledgeProbe && motor && (motor.facingSign != lastFacingSign || Mathf.Abs(transform.position.y - lastPlayerY) > 0.1f))
-        {
-            Vector3 probePos = transform.position;
-            probePos.x += motor.facingSign * ledgeProbeDistance;
-            probePos.y += ledgeProbeHeight; // Yükseklik ayarı
-            ledgeProbe.position = probePos;
-            lastFacingSign = motor.facingSign;
-            lastPlayerY = transform.position.y;
-        }
-        
-        var hitL = Physics2D.OverlapCircle(ledgeProbe.position, 0.12f, ledgeMask);
-        if (hitL)
-        {
-            activeLedge = hitL.GetComponent<LedgeMarker>();
-            if (!activeLedge) activeLedge = hitL.transform.GetComponentInParent<LedgeMarker>();
-        }
-        if (activeLedge != null)
-        {
-            isLedge = true;
-        }
-        else if (!isGrounded)
-        {
-            // Fallback: üst boş - alt dolu kenar tespiti (dayanıklı olmayabilir)
-            bool spaceAtHead = !Physics2D.OverlapCircle(head.position, headRadius, solidMask);
-            bool groundBelow = Physics2D.Raycast(ledgeProbe.position, Vector2.down, 0.4f, solidMask);
-            isLedge = spaceAtHead && groundBelow;
-        }
 
         // Interactable (trigger)
         nearestInteractable = null;
@@ -142,9 +98,6 @@ public class Sensors2D : MonoBehaviour
         Gizmos.color = wallRight ? Color.green : Color.red;
         if (wallR) Gizmos.DrawLine(wallR.position, wallR.position + Vector3.right * wallDist);
 
-        // Ledge probe
-        Gizmos.color = isLedge ? Color.yellow : Color.cyan;
-        if (ledgeProbe) Gizmos.DrawWireSphere(ledgeProbe.position, 0.12f);
 
         // Ladder check
         Gizmos.color = onLadder ? Color.blue : Color.gray;
@@ -171,9 +124,6 @@ public class Sensors2D : MonoBehaviour
         if (wallL) Gizmos.DrawLine(wallL.position, wallL.position + Vector3.left * wallDist);
         if (wallR) Gizmos.DrawLine(wallR.position, wallR.position + Vector3.right * wallDist);
 
-        // Ledge probe
-        Gizmos.color = new Color(1f, 0.5f, 0f); // Orange
-        if (ledgeProbe) Gizmos.DrawWireSphere(ledgeProbe.position, 0.12f);
 
         // Ladder check
         Gizmos.color = Color.green;

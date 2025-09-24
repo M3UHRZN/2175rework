@@ -11,7 +11,6 @@ public class AbilityController : MonoBehaviour
     JumpController jump;
     WallMovement wall;
     WallClimbController wallClimb;
-    LedgeHangController ledge;
     ClimbController climb;
     InteractionController interact;
 
@@ -25,7 +24,6 @@ public class AbilityController : MonoBehaviour
         jump  = GetComponent<JumpController>();
         wall  = GetComponent<WallMovement>();
         wallClimb = GetComponent<WallClimbController>();
-        ledge = GetComponent<LedgeHangController>();
         climb = GetComponent<ClimbController>();
         interact = GetComponent<InteractionController>();
     }
@@ -38,22 +36,20 @@ public class AbilityController : MonoBehaviour
         // Unified State Management - öncelik sırasına göre controller'ları çalıştır
         // Her controller sadece kendi state'ini request eder, FSM priority'ye göre karar verir
         
-        // 1. En yüksek öncelik: LedgeHang
-        ledge?.Tick(dt);
         
-        // 2. WallClimb (WallSlide'dan önce)
+        // 1. WallClimb (WallSlide'dan önce)
         wallClimb?.Tick(dt);
         
-        // 3. WallSlide (WallClimb'dan sonra)
+        // 2. WallSlide (WallClimb'dan sonra)
         wall?.Tick(dt);
         
-        // 4. Climb (Ladder)
+        // 3. Climb (Ladder)
         climb?.Tick(dt);
         
-        // 5. Jump
+        // 4. Jump
         jump?.Tick(dt);
         
-        // 6. Interact
+        // 5. Interact
         interact?.Tick(dt);
 
         // Default state resolution - sadece düşük öncelikli state'lerde çalışır

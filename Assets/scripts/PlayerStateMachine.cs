@@ -4,8 +4,8 @@ using System;
 [DisallowMultipleComponent]
 public class PlayerStateMachine : MonoBehaviour
 {
-    public enum LocoState { Idle, Run, JumpRise, JumpFall, WallSlide, WallClimb, LedgeHang, Climb }
-    public enum PhaseState { None, WallJump, LedgeClimb, DropThrough }
+    public enum LocoState { Idle, Run, JumpRise, JumpFall, WallSlide, WallClimb, Climb }
+    public enum PhaseState { None, WallJump, DropThrough }
 
     public LocoState Current { get; private set; } = LocoState.Idle;
     public PhaseState Phase { get; private set; } = PhaseState.None;
@@ -22,7 +22,6 @@ public class PlayerStateMachine : MonoBehaviour
         1, // JumpFall
         2, // WallSlide
         3, // WallClimb
-        4, // LedgeHang
         2  // Climb
     };
 
@@ -61,19 +60,16 @@ public class PlayerStateMachine : MonoBehaviour
             case LocoState.JumpFall:
                 return to == LocoState.Idle || to == LocoState.Run || 
                        to == LocoState.WallSlide || to == LocoState.WallClimb || 
-                       to == LocoState.LedgeHang || to == LocoState.Climb;
+                       to == LocoState.Climb;
                        
             case LocoState.WallSlide:
                 return to == LocoState.JumpRise || to == LocoState.JumpFall || 
-                       to == LocoState.WallClimb || to == LocoState.LedgeHang;
+                       to == LocoState.WallClimb;
                        
             case LocoState.WallClimb:
                 return to == LocoState.JumpRise || to == LocoState.JumpFall || 
-                       to == LocoState.WallSlide || to == LocoState.LedgeHang;
+                       to == LocoState.WallSlide;
                        
-            case LocoState.LedgeHang:
-                return to == LocoState.Idle || to == LocoState.Run || 
-                       to == LocoState.JumpFall;
                        
             case LocoState.Climb:
                 return to == LocoState.JumpRise || to == LocoState.JumpFall;

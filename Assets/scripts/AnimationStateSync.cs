@@ -48,7 +48,6 @@ public class AnimationStateSync : MonoBehaviour
                 if (anim && anim.animator)
                 {
                     if (p == PlayerStateMachine.PhaseState.WallJump)  anim.Trigger("WallJump");
-                    if (p == PlayerStateMachine.PhaseState.LedgeClimb)anim.Trigger("LedgeClimb");
                 }
             };
         }
@@ -62,7 +61,6 @@ public class AnimationStateSync : MonoBehaviour
             anim.SetBool("Grounded", sensors.isGrounded);
             anim.SetBool("WallSliding", fsm.Current == PlayerStateMachine.LocoState.WallSlide);
             anim.SetBool("WallClimbing", fsm.Current == PlayerStateMachine.LocoState.WallClimb);
-            anim.SetBool("LedgeHanging", fsm.Current == PlayerStateMachine.LocoState.LedgeHang);
             anim.SetBool("Climbing", fsm.Current == PlayerStateMachine.LocoState.Climb);
             anim.SetFloat("SpeedX", Mathf.Abs(motor.velocityX));
             anim.SetFloat("SpeedY", motor.velocityY);

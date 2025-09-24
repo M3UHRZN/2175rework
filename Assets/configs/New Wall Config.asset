@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: New Wall Config
   m_EditorClassIdentifier: 
   wallCheckDist: 4
-  wallJumpAngle: 40
+  wallJumpAngle: 70
   wallJumpImpulse: 20

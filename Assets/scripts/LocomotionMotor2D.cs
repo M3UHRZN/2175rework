@@ -7,7 +7,6 @@ public class LocomotionMotor2D : MonoBehaviour
     public MovementConfig movement;
     public JumpConfig jumpCfg;
     public WallConfig wallCfg;
-    public LedgeConfig ledgeCfg;
     public ClimbConfig climbCfg;
     public WallClimbConfig wallClimbCfg;
 
@@ -21,8 +20,6 @@ public class LocomotionMotor2D : MonoBehaviour
     bool  allowCutJump;
     bool  wallSlideRequested;
     int   wallDir; // -1 left, +1 right
-    bool  hanging;
-    Vector2 hangPoint;
     bool  climbing;
     float climbVSpeed;
     bool wallClimbing;
@@ -73,23 +70,6 @@ public class LocomotionMotor2D : MonoBehaviour
         fsm.TriggerPhase(PlayerStateMachine.PhaseState.WallJump);
     }
 
-    public void RequestLedgeHang(Vector2 snapPoint, int facing = 0)
-    {
-        hanging = true;
-        hangPoint = snapPoint;
-        rb.linearVelocity = Vector2.zero;
-        rb.gravityScale = 0f;
-        if (facing != 0) facingSign = facing; // ledge işareti zorlayabilir
-    }
-
-    public void RequestLedgeClimb(int dirSign, Vector2 climbShift)
-    {
-        if (!hanging) return;
-        rb.position = rb.position + climbShift * new Vector2(Mathf.Sign(dirSign), 1f);
-        hanging = false;
-        rb.gravityScale = movement ? movement.gravityScale : 3.5f;
-        fsm.TriggerPhase(PlayerStateMachine.PhaseState.LedgeClimb);
-    }
 
     public void RequestClimb(float verticalSpeed)
     {
@@ -124,13 +104,6 @@ public class LocomotionMotor2D : MonoBehaviour
 
     public void PhysicsStep(float fixedDt)
     {
-        // Ledge hang → pozisyonu kilitle
-        if (hanging)
-        {
-            rb.linearVelocity = Vector2.zero;
-            rb.position = Vector2.Lerp(rb.position, hangPoint, ledgeCfg ? ledgeCfg.snapLerp : 0.85f);
-            return;
-        }
 
         // Tırmanış
         if (climbing)
@@ -206,13 +179,6 @@ public class LocomotionMotor2D : MonoBehaviour
                 if (sensors.wallLeft)  { facingSign = -1; return; }
                 break;
 
-            case PlayerStateMachine.LocoState.LedgeHang:
-                if (sensors.activeLedge && sensors.activeLedge.preferFacing != 0)
-                {
-                    facingSign = sensors.activeLedge.preferFacing;
-                    return;
-                }
-                break;
         }
 
         // 3) Aksi halde önceki facing'i koru (dikey hareketlerde titreme olmaz)
