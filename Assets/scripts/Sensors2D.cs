@@ -16,6 +16,7 @@ public class Sensors2D : MonoBehaviour
     public LayerMask ladderMask;      // Ladder (trigger)
     public LayerMask interactMask;    // Interactable (trigger)
     public LayerMask climbableMask;   // Climbable (trigger)
+    public LayerMask jumpableMask;    // Jumpable (trigger)
 
     [Header("Sizes / Distances")]
     public float feetRadius  = 0.12f;
@@ -35,6 +36,9 @@ public class Sensors2D : MonoBehaviour
     public bool onClimbableLeft  { get; private set; }
     public bool onClimbableRight { get; private set; }
     public bool onClimbableAny   => onClimbableLeft || onClimbableRight;
+    public bool onJumpableLeft   { get; private set; }
+    public bool onJumpableRight  { get; private set; }
+    public bool onJumpableAny    => onJumpableLeft || onJumpableRight;
 
     bool prevGrounded;
 
@@ -63,6 +67,10 @@ public class Sensors2D : MonoBehaviour
         // Climbable (trigger) — sol/sağ duvar köşelerinde küçük kapsülle kontrol
         onClimbableLeft  = Physics2D.OverlapCircle(wallL.position, 0.12f, climbableMask);
         onClimbableRight = Physics2D.OverlapCircle(wallR.position, 0.12f, climbableMask);
+
+        // Jumpable (trigger) — sol/sağ duvar köşelerinde küçük kapsülle kontrol
+        onJumpableLeft   = Physics2D.OverlapCircle(wallL.position, 0.12f, jumpableMask);
+        onJumpableRight  = Physics2D.OverlapCircle(wallR.position, 0.12f, jumpableMask);
 
 
         // Interactable (trigger)

@@ -13,6 +13,15 @@ public class PlayerStateMachine : MonoBehaviour
     public event Action<LocoState, LocoState> OnLocoChanged;
     public event Action<PhaseState> OnPhaseTriggered;
 
+    Sensors2D sensors;
+    LocomotionMotor2D motor;
+
+    void Awake()
+    {
+        sensors = GetComponent<Sensors2D>();
+        motor = GetComponent<LocomotionMotor2D>();
+    }
+
     // State priority system - yüksek sayı = yüksek öncelik
     private static readonly int[] StatePriorities = new int[]
     {
@@ -40,11 +49,44 @@ public class PlayerStateMachine : MonoBehaviour
         // Context-aware transition rules
         if (CanTransitionFromTo(Current, target))
         {
+            // State çıkış mantığı
+            HandleStateExit(Current);
+            
             ForceSet(target);
             return true;
         }
         
         return false;
+    }
+
+    private void HandleStateExit(LocoState exitingState)
+    {
+        switch (exitingState)
+        {
+            case LocoState.WallSlide:
+                // Wall slide çıkışında özel bir şey yapmaya gerek yok
+                // Motor zaten wall slide'ı otomatik durduruyor
+                break;
+                
+            case LocoState.WallClimb:
+                motor.StopWallClimbRestoreGravity();
+                break;
+                
+            case LocoState.Climb:
+                motor.RequestStopClimbRestoreGravity();
+                break;
+                
+            case LocoState.JumpRise:
+            case LocoState.JumpFall:
+                // Jump state'lerinden çıkışta özel bir şey yapmaya gerek yok
+                // Motor zaten gravity'yi otomatik yönetiyor
+                break;
+                
+            case LocoState.Idle:
+            case LocoState.Run:
+                // Ground state'lerden çıkışta özel bir şey yapmaya gerek yok
+                break;
+        }
     }
 
     private bool CanTransitionFromTo(LocoState from, LocoState to)
@@ -64,7 +106,7 @@ public class PlayerStateMachine : MonoBehaviour
                        
             case LocoState.WallSlide:
                 return to == LocoState.JumpRise || to == LocoState.JumpFall || 
-                       to == LocoState.WallClimb;
+                       to == LocoState.WallClimb || to == LocoState.Idle || to == LocoState.Run;
                        
             case LocoState.WallClimb:
                 return to == LocoState.JumpRise || to == LocoState.JumpFall || 

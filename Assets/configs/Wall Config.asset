@@ -9,12 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac6230cd0f07e1a4c957beda731a8ab0, type: 3}
-  m_Name: New Movement Config
+  m_Script: {fileID: 11500000, guid: 1480803f29d3bcd439878459cf61aaff, type: 3}
+  m_Name: Wall Config
   m_EditorClassIdentifier: 
-  maxRunSpeed: 12
-  accelTime: 0.8
-  decelTime: 1
-  airControl: 0.55
-  gravityScale: 3.5
-  wallSlideMaxFall: 2.5
+  wallCheckDist: 0.2
+  slideFriction: 0.1
+  slideAcceleration: 2

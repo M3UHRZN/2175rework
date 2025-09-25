@@ -11,6 +11,7 @@ public class AbilityController : MonoBehaviour
     JumpController jump;
     WallMovement wall;
     WallClimbController wallClimb;
+    WallJumpController wallJump;
     ClimbController climb;
     InteractionController interact;
 
@@ -24,6 +25,7 @@ public class AbilityController : MonoBehaviour
         jump  = GetComponent<JumpController>();
         wall  = GetComponent<WallMovement>();
         wallClimb = GetComponent<WallClimbController>();
+        wallJump = GetComponent<WallJumpController>();
         climb = GetComponent<ClimbController>();
         interact = GetComponent<InteractionController>();
     }
@@ -43,13 +45,16 @@ public class AbilityController : MonoBehaviour
         // 2. WallSlide (WallClimb'dan sonra)
         wall?.Tick(dt);
         
-        // 3. Climb (Ladder)
+        // 3. WallJump (WallSlide sırasında)
+        wallJump?.Tick(dt);
+        
+        // 4. Climb (Ladder)
         climb?.Tick(dt);
         
-        // 4. Jump
+        // 5. Jump
         jump?.Tick(dt);
         
-        // 5. Interact
+        // 6. Interact
         interact?.Tick(dt);
 
         // Default state resolution - sadece düşük öncelikli state'lerde çalışır
@@ -58,7 +63,48 @@ public class AbilityController : MonoBehaviour
 
     private void ResolveDefaultStates()
     {
-        // Sadece düşük öncelikli state'lerde default resolution yap
+        // Wall slide çıkış kontrolü
+        if (fsm.Current == PlayerStateMachine.LocoState.WallSlide)
+        {
+            if (sensors.isGrounded)
+            {
+                fsm.RequestTransition(Mathf.Abs(input.MoveX) > 0.05f
+                    ? PlayerStateMachine.LocoState.Run
+                    : PlayerStateMachine.LocoState.Idle, "WallSlide->Grounded");
+                return;
+            }
+            
+            if (!sensors.wallLeft && !sensors.wallRight)
+            {
+                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "WallSlide->NoWall");
+                return;
+            }
+        }
+
+        // Wall climb çıkış kontrolü
+        if (fsm.Current == PlayerStateMachine.LocoState.WallClimb)
+        {
+            if (!(sensors.onClimbableAny && (sensors.wallLeft || sensors.wallRight)))
+            {
+                if (!sensors.isGrounded && (sensors.wallLeft || sensors.wallRight))
+                    fsm.RequestTransition(PlayerStateMachine.LocoState.WallSlide, "WallClimb->Slide");
+                else
+                    fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "WallClimb->Fall");
+                return;
+            }
+        }
+
+        // Climb çıkış kontrolü
+        if (fsm.Current == PlayerStateMachine.LocoState.Climb)
+        {
+            if (!sensors.onLadder)
+            {
+                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "Climb->Fall");
+                return;
+            }
+        }
+
+        // Default state resolution - sadece düşük öncelikli state'lerde
         if (fsm.Current == PlayerStateMachine.LocoState.Idle || 
             fsm.Current == PlayerStateMachine.LocoState.Run ||
             fsm.Current == PlayerStateMachine.LocoState.JumpRise ||

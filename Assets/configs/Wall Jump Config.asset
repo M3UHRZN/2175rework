@@ -9,9 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b523d283bb77c34d9cab2cd8be55ba7, type: 3}
-  m_Name: New Wall Climb Config
+  m_Script: {fileID: 11500000, guid: 4143585ea8bb0ba46a4a4c673eb09a5c, type: 3}
+  m_Name: Wall Jump Config
   m_EditorClassIdentifier: 
-  climbSpeed: 3.5
-  stickFriction: 0.15
-  enterMinMoveY: 0.1
+  wallJumpAngle: 55
+  wallJumpImpulse: 50
+  inputBufferMs: 100
+  cooldownMs: 200
+  wallPushForce: 0.3
+  allowVariableJump: 1
+  variableJumpMultiplier: 0.7

@@ -9,13 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7cbae6b6b65daaf4a84597941eff820d, type: 3}
-  m_Name: New Jump Config
+  m_Script: {fileID: 11500000, guid: 038c15d05d68a714bbb6fd12b6aebda1, type: 3}
+  m_Name: Climb Config
   m_EditorClassIdentifier: 
-  shortJumpHeight: 1.25
-  fullJumpHeight: 2.6
-  jumpHoldMs: 180
-  coyoteMs: 150
-  bufferMs: 150
-  ceilingCancel: 1
-  cutMultiplier: 0.55
+  climbSpeed: 4
+  enterTolerance: 0.1
+  exitThreshold: 0.15

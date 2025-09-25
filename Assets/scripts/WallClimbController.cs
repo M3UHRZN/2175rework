@@ -30,31 +30,38 @@ public class WallClimbController : MonoBehaviour
             // Wall climb sırasında yönü koru ve dikey hızı güncelle
             motor.RequestWallClimb(currentWallDir, input.MoveY * cfg.climbSpeed);
 
-            // ayrılma koşulları
-            if (!(s.onClimbableAny && (s.wallLeft || s.wallRight)))
+            // Çıkış koşulları kontrol et
+            if (cfg.exitOnHorizontalMove && Mathf.Abs(input.MoveX) > cfg.horizontalMoveThreshold)
             {
+                // A/D ile çıkış
                 motor.StopWallClimbRestoreGravity();
-                currentWallDir = 0; // Reset
-                
-                // Exit transition'ları
-                if (!s.isGrounded && (s.wallLeft || s.wallRight))
-                    fsm.RequestTransition(PlayerStateMachine.LocoState.WallSlide, "ExitWallClimb->Slide");
-                else
-                    fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "ExitWallClimb");
-                
+                currentWallDir = 0;
+                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "WallClimb->HorizontalMove");
+                return;
             }
-            else if (input.JumpPressed)
+            
+            if (cfg.exitOnJump && input.JumpPressed)
             {
+                // Zıplama ile çıkış
                 motor.StopWallClimbRestoreGravity();
-                currentWallDir = 0; // Reset
                 
-                // Wall jump yap (duvardan ayrılarak)
-                float a = Mathf.Deg2Rad * (wallCfg ? wallCfg.wallJumpAngle : 55f);
-                Vector2 outDir = new Vector2(-currentWallDir * Mathf.Cos(a), Mathf.Sin(a)).normalized;
-                motor.RequestWallJump(outDir * (wallCfg ? wallCfg.wallJumpImpulse : 10f));
-                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "WallClimbJump");
+                // Zıplama hesaplama
+                float angle = Mathf.Deg2Rad * cfg.jumpExitAngle;
+                Vector2 outDir = new Vector2(-currentWallDir * Mathf.Cos(angle), Mathf.Sin(angle)).normalized;
+                float impulse = cfg.jumpExitImpulse;
                 
+                // Variable jump height kontrolü
+                if (cfg.allowVariableJumpExit && !input.JumpHeld)
+                {
+                    impulse *= cfg.variableJumpMultiplier;
+                }
+                
+                motor.RequestWallJump(outDir * impulse);
+                currentWallDir = 0;
+                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "WallClimb->Jump");
+                return;
             }
+            
             return; // Wall climb aktifken giriş kontrolü yapma
         }
 
@@ -70,11 +77,7 @@ public class WallClimbController : MonoBehaviour
             float v = input.MoveY * cfg.climbSpeed; // yukarı/asağı
             motor.RequestWallClimb(dir, v);
             
-            // Sadece daha yüksek öncelikli state'e geçiş yapabilir
-            if (fsm.CanTransitionTo(PlayerStateMachine.LocoState.WallClimb))
-            {
-                fsm.RequestTransition(PlayerStateMachine.LocoState.WallClimb, "WallClimb");
-            }
+            fsm.RequestTransition(PlayerStateMachine.LocoState.WallClimb, "WallClimb");
         }
     }
 }

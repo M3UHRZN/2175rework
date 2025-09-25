@@ -19,6 +19,7 @@ public class WallMovement : MonoBehaviour
 
     public void Tick(float dt)
     {
+        // Wall slide giriş kontrolü
         if (sensors.isGrounded) return;
         
         // WallClimb aktifse WallSlide'a geçmeye çalışma (çakışma önleme)
@@ -31,20 +32,7 @@ public class WallMovement : MonoBehaviour
         if (dir != 0)
         {
             motor.RequestWallSlide(dir);
-            
-            // Sadece daha yüksek öncelikli state'e geçiş yapabilir
-            if (fsm.CanTransitionTo(PlayerStateMachine.LocoState.WallSlide))
-            {
-                fsm.RequestTransition(PlayerStateMachine.LocoState.WallSlide, "WallSlide");
-            }
-
-            if (input.JumpPressed)
-            {
-                float a = Mathf.Deg2Rad * (wallCfg ? wallCfg.wallJumpAngle : 55f);
-                Vector2 outDir = new Vector2(-dir * Mathf.Cos(a), Mathf.Sin(a)).normalized;
-                motor.RequestWallJump(outDir * (wallCfg ? wallCfg.wallJumpImpulse : 10f));
-                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "WallJump");
-            }
+            fsm.RequestTransition(PlayerStateMachine.LocoState.WallSlide, "WallSlide");
         }
     }
 }

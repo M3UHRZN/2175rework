@@ -19,35 +19,36 @@ public class ClimbController : MonoBehaviour
 
     public void Tick(float dt)
     {
-        if (sensors.onLadder)
+        // Climb aktifken kontroller
+        if (fsm.Current == PlayerStateMachine.LocoState.Climb)
         {
-            if (Mathf.Abs(input.MoveY) > 0.1f)
-            {
-                float speed = climbCfg ? climbCfg.climbSpeed : 4f;
-                // ladder volume override (ops)
-                var hit = Physics2D.OverlapCircle(transform.position, 0.2f, sensors.ladderMask);
-                var vol = hit ? hit.GetComponent<LadderVolume>() : null;
-                if (vol && vol.overrideClimbSpeed > 0f) speed = vol.overrideClimbSpeed;
+            // Climb sırasında dikey hızı güncelle
+            float speed = climbCfg ? climbCfg.climbSpeed : 4f;
+            // ladder volume override (ops)
+            var hit = Physics2D.OverlapCircle(transform.position, 0.2f, sensors.ladderMask);
+            var vol = hit ? hit.GetComponent<LadderVolume>() : null;
+            if (vol && vol.overrideClimbSpeed > 0f) speed = vol.overrideClimbSpeed;
 
-                motor.RequestClimb(input.MoveY * speed);
-                
-                // Sadece daha yüksek öncelikli state'e geçiş yapabilir
-                if (fsm.CanTransitionTo(PlayerStateMachine.LocoState.Climb))
-                {
-                    fsm.RequestTransition(PlayerStateMachine.LocoState.Climb, "Climb");
-                }
-            }
+            motor.RequestClimb(input.MoveY * speed);
 
+            // Jump ile çıkış
             if (input.JumpPressed)
             {
                 motor.RequestStopClimbRestoreGravity();
                 fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "ClimbJump");
+                return;
             }
+            
+            return; // Climb aktifken giriş kontrolü yapma
         }
-        else if (fsm.Current == PlayerStateMachine.LocoState.Climb)
+
+        // Climb giriş kontrolü
+        if (sensors.onLadder)
         {
-            motor.RequestStopClimbRestoreGravity();
-            fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "ExitClimb");
+            if (Mathf.Abs(input.MoveY) > 0.1f)
+            {
+                fsm.RequestTransition(PlayerStateMachine.LocoState.Climb, "Climb");
+            }
         }
     }
 }
