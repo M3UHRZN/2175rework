@@ -11,10 +11,10 @@ TagManager:
   - Player
   - Water
   - UI
-  - 
+  - OneWay
   - Wall
   - Ground
-  - OneWay
+  - 
   - MovingPlatform
   - Ladder
   - Ledge

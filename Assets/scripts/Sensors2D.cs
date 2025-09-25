@@ -10,13 +10,13 @@ public class Sensors2D : MonoBehaviour
     public Transform wallR;
 
     [Header("Layer Masks")]
-    public LayerMask solidMask;       // Ground | OneWay | MovingPlatform (solid)
-    public LayerMask oneWayMask;      // sadece OneWay
+    public LayerMask solidMask;       // Ground | MovingPlatform (solid)
     public LayerMask wallMask;        // genelde Ground ile aynı
     public LayerMask ladderMask;      // Ladder (trigger)
     public LayerMask interactMask;    // Interactable (trigger)
     public LayerMask climbableMask;   // Climbable (trigger)
     public LayerMask jumpableMask;    // Jumpable (trigger)
+    public LayerMask ceilingMask;     // Tavan için (Ground)
 
     [Header("Sizes / Distances")]
     public float feetRadius  = 0.12f;
@@ -30,7 +30,6 @@ public class Sensors2D : MonoBehaviour
     public bool headBlocked { get; private set; }
     public bool wallLeft { get; private set; }
     public bool wallRight { get; private set; }
-    public bool onOneWay { get; private set; }
     public bool onLadder { get; private set; }
     public Interactable nearestInteractable { get; private set; }
     public bool onClimbableLeft  { get; private set; }
@@ -39,23 +38,31 @@ public class Sensors2D : MonoBehaviour
     public bool onJumpableLeft   { get; private set; }
     public bool onJumpableRight  { get; private set; }
     public bool onJumpableAny    => onJumpableLeft || onJumpableRight;
+    public Collider2D groundCollider { get; private set; }
 
     bool prevGrounded;
 
     void Awake()
     {
+        // Boş bıraktıysan otomatik: solid
+        if (ceilingMask.value == 0)
+            ceilingMask = solidMask;
     }
 
     public void Sample()
     {
-        // Ground / OneWay (solid)
-        isGrounded = Physics2D.OverlapCircle(feet.position, feetRadius, solidMask);
-        onOneWay   = Physics2D.OverlapCircle(feet.position, feetRadius, oneWayMask);
+        // Ground (solid)
+        var groundHit = Physics2D.OverlapCircle(feet.position, feetRadius, solidMask);
+        isGrounded = groundHit != null;
+        groundCollider = groundHit;
         justLanded = !prevGrounded && isGrounded;
         prevGrounded = isGrounded;
 
-        // Head (solid)
-        headBlocked = Physics2D.OverlapCircle(head.position, headRadius, solidMask);
+        // Tavan (ceiling) kontrolü
+        if (head)
+            headBlocked = Physics2D.OverlapCircle((Vector2)head.position, headRadius, ceilingMask);
+        else
+            headBlocked = false;
 
         // Walls (solid ray)
         wallLeft  = Physics2D.Raycast(wallL.position, Vector2.left,  wallDist, wallMask);

@@ -14,6 +14,7 @@ public class LocomotionMotor2D : MonoBehaviour
     Sensors2D sensors;
     PlayerStateMachine fsm;
 
+
     // Intent/state
     float desiredX;
     float jumpHoldTimerMs;
@@ -40,6 +41,7 @@ public class LocomotionMotor2D : MonoBehaviour
         fsm = GetComponent<PlayerStateMachine>();
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         rb.gravityScale = movement ? movement.gravityScale : 3.5f;
+        
     }
 
     // --------- Requests from controllers ----------
@@ -183,4 +185,5 @@ public class LocomotionMotor2D : MonoBehaviour
 
         // 3) Aksi halde önceki facing'i koru (dikey hareketlerde titreme olmaz)
     }
+
 }

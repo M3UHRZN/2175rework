@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4143585ea8bb0ba46a4a4c673eb09a5c, type: 3}
   m_Name: Wall Jump Config
   m_EditorClassIdentifier: 
-  wallJumpAngle: 55
-  wallJumpImpulse: 50
+  wallJumpAngle: 40
+  wallJumpImpulse: 20
   inputBufferMs: 100
   cooldownMs: 200
   wallPushForce: 0.3
-  allowVariableJump: 1
+  allowVariableJump: 0
   variableJumpMultiplier: 0.7

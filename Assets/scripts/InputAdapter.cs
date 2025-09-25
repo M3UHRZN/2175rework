@@ -13,7 +13,6 @@ public class InputAdapter : MonoBehaviour
     public float MoveY { get; private set; }
     public bool  JumpHeld { get; private set; }
     public bool  JumpPressed { get; private set; }
-    public bool  DownHeld => MoveY < -0.5f;
     public bool  InteractPressed { get; private set; }
 
     void OnEnable()

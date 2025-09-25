@@ -5,7 +5,7 @@ using System;
 public class PlayerStateMachine : MonoBehaviour
 {
     public enum LocoState { Idle, Run, JumpRise, JumpFall, WallSlide, WallClimb, Climb }
-    public enum PhaseState { None, WallJump, DropThrough }
+    public enum PhaseState { None, WallJump }
 
     public LocoState Current { get; private set; } = LocoState.Idle;
     public PhaseState Phase { get; private set; } = PhaseState.None;
@@ -99,6 +99,10 @@ public class PlayerStateMachine : MonoBehaviour
                 return true; // Ground state'lerden her yere geçilebilir
                 
             case LocoState.JumpRise:
+                return to == LocoState.JumpFall || to == LocoState.Idle || to == LocoState.Run || 
+                       to == LocoState.WallSlide || to == LocoState.WallClimb || 
+                       to == LocoState.Climb;
+                       
             case LocoState.JumpFall:
                 return to == LocoState.Idle || to == LocoState.Run || 
                        to == LocoState.WallSlide || to == LocoState.WallClimb || 

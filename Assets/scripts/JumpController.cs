@@ -32,12 +32,6 @@ public class JumpController : MonoBehaviour
         if (input.JumpPressed) bufferMsLeft = jumpCfg ? jumpCfg.bufferMs : 150f;
         else bufferMsLeft = Mathf.Max(0f, bufferMsLeft - dt * 1000f);
 
-        // OneWay drop (Effector ile çalışır)
-        if (input.DownHeld && input.JumpPressed && sensors.onOneWay)
-        {
-            fsm.TriggerPhase(PlayerStateMachine.PhaseState.DropThrough);
-            return;
-        }
 
         // Jump apply
         bool canJump = sensors.isGrounded || coyoteMsLeft > 0f;
