@@ -27,15 +27,34 @@ public class AnimationStateSync : MonoBehaviour
         fsm = GetComponent<PlayerStateMachine>();
         sensors = GetComponent<Sensors2D>();
         motor = GetComponent<LocomotionMotor2D>();
+        if (!anim) anim = GetComponent<AnimationFacade>();
         if (!spriteRenderer) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         if (!flipRoot) flipRoot = transform;
         baseScale = flipRoot.localScale;
+
+        if (fsm != null)
+        {
+            fsm.OnLocoChanged += (oldS, newS) =>
+            {
+                if (anim && anim.animator)
+                {
+                    if (newS == PlayerStateMachine.LocoState.JumpRise) anim.Trigger("Jump");
+                    if ((newS == PlayerStateMachine.LocoState.Idle || newS == PlayerStateMachine.LocoState.Run) && sensors.justLanded)
+                        anim.Trigger("Land");
+                }
+            };
+            fsm.OnPhaseTriggered += (p) =>
+            {
+                if (anim && anim.animator)
+                {
+                    if (p == PlayerStateMachine.PhaseState.WallJump)  anim.Trigger("WallJump");
+                }
+            };
+        }
     }
 
     public void LateSync()
     {
-        if (!anim) anim = GetComponent<AnimationFacade>();
-
         // Animator paramları (sadece animator varsa)
         if (anim && anim.animator)
         {
