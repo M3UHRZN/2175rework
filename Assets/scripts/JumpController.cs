@@ -10,6 +10,7 @@ public class JumpController : MonoBehaviour
     Sensors2D sensors;
     LocomotionMotor2D motor;
     PlayerStateMachine fsm;
+    AbilityRuntime abilities;
 
     float coyoteMsLeft;
     float bufferMsLeft;
@@ -20,10 +21,18 @@ public class JumpController : MonoBehaviour
         sensors = GetComponent<Sensors2D>();
         motor = GetComponent<LocomotionMotor2D>();
         fsm = GetComponent<PlayerStateMachine>();
+        abilities = GetComponent<AbilityRuntime>();
     }
 
     public void Tick(float dt)
     {
+        if (abilities && !abilities.CanJump)
+        {
+            coyoteMsLeft = 0f;
+            bufferMsLeft = 0f;
+            return;
+        }
+
         // coyote
         if (sensors.isGrounded) coyoteMsLeft = jumpCfg ? jumpCfg.coyoteMs : 150f;
         else coyoteMsLeft = Mathf.Max(0f, coyoteMsLeft - dt * 1000f);

@@ -10,6 +10,7 @@ public class WallClimbController : MonoBehaviour
     Sensors2D s;
     LocomotionMotor2D motor;
     PlayerStateMachine fsm;
+    AbilityRuntime abilities;
     
     // Wall climb state tracking
     int currentWallDir = 0; // -1 sol, +1 sağ, 0 yok
@@ -20,10 +21,14 @@ public class WallClimbController : MonoBehaviour
         s     = GetComponent<Sensors2D>();
         motor = GetComponent<LocomotionMotor2D>();
         fsm   = GetComponent<PlayerStateMachine>();
+        abilities = GetComponent<AbilityRuntime>();
     }
 
     public void Tick(float dt)
     {
+        if (abilities && !abilities.CanClimb)
+            return;
+
         // WallClimb aktifken kontroller
         if (fsm.Current == PlayerStateMachine.LocoState.WallClimb)
         {

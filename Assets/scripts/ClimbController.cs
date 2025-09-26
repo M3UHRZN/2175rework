@@ -8,6 +8,7 @@ public class ClimbController : MonoBehaviour
     Sensors2D sensors;
     LocomotionMotor2D motor;
     PlayerStateMachine fsm;
+    AbilityRuntime abilities;
 
     void Awake()
     {
@@ -15,10 +16,14 @@ public class ClimbController : MonoBehaviour
         sensors= GetComponent<Sensors2D>();
         motor  = GetComponent<LocomotionMotor2D>();
         fsm    = GetComponent<PlayerStateMachine>();
+        abilities = GetComponent<AbilityRuntime>();
     }
 
     public void Tick(float dt)
     {
+        if (abilities && !abilities.CanClimb)
+            return;
+
         // Climb aktifken kontroller
         if (fsm.Current == PlayerStateMachine.LocoState.Climb)
         {

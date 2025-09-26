@@ -9,6 +9,7 @@ public class WallJumpController : MonoBehaviour
     Sensors2D sensors;
     LocomotionMotor2D motor;
     PlayerStateMachine fsm;
+    AbilityRuntime abilities;
 
     void Awake()
     {
@@ -16,10 +17,14 @@ public class WallJumpController : MonoBehaviour
         sensors = GetComponent<Sensors2D>();
         motor = GetComponent<LocomotionMotor2D>();
         fsm = GetComponent<PlayerStateMachine>();
+        abilities = GetComponent<AbilityRuntime>();
     }
 
     public void Tick(float dt)
     {
+        if (abilities && !abilities.CanWallJump)
+            return;
+
         // Sadece wall slide sırasında wall jump yapılabilir
         if (fsm.Current != PlayerStateMachine.LocoState.WallSlide) return;
         
