@@ -2503,13 +2503,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 92ad357ba5a16cc4eb1018a5678c183a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   anim: {fileID: 2756311410664245654}
   spriteRenderer: {fileID: 2839424261259682129}
   invertX: 0
   flipByScale: 0
   flipRoot: {fileID: 0}
+--- !u!114 &5948360013630333915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4078480642110948400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19cb5d850fb49f79b4c3d09d2e55b41, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  animationFacade: {fileID: 2756311410664245654}
+  sensors: {fileID: 4368741750299186679}
+  locomotionMotor: {fileID: 423031407205352638}
 --- !u!114 &695269032839276140
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2820,13 +2835,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 92ad357ba5a16cc4eb1018a5678c183a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   anim: {fileID: 4263689126297884480}
   spriteRenderer: {fileID: 4182825245110157191}
   invertX: 0
   flipByScale: 0
   flipRoot: {fileID: 0}
+--- !u!114 &8894465914235312443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2734358688004659942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19cb5d850fb49f79b4c3d09d2e55b41, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  animationFacade: {fileID: 4263689126297884480}
+  sensors: {fileID: 2435087637150796577}
+  locomotionMotor: {fileID: 1780365402394516072}
 --- !u!70 &2002600848390550982
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -3028,6 +3058,7 @@ GameObject:
   - component: {fileID: 8769220958720044104}
   - component: {fileID: 4263689126297884480}
   - component: {fileID: 1916404499674130662}
+  - component: {fileID: 8894465914235312443}
   - component: {fileID: 2718116293053744850}
   - component: {fileID: 4233018739030414552}
   - component: {fileID: 1227772311418508448}
@@ -3381,6 +3412,7 @@ GameObject:
   - component: {fileID: 7266910067670839966}
   - component: {fileID: 2756311410664245654}
   - component: {fileID: 572985786309850672}
+  - component: {fileID: 5948360013630333915}
   - component: {fileID: 4094748884196808708}
   - component: {fileID: 2870336856747870734}
   - component: {fileID: 892315661252479606}
