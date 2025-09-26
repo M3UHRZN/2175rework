@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 8347125427243334911}
   - component: {fileID: 7635455858464217097}
   m_Layer: 3
-  m_Name: Elior
+  m_Name: meudeneme
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
