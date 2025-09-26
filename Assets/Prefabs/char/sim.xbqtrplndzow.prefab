@@ -197,7 +197,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -855298285791758126, guid: cd971eebfc9f6014a9ac4a23a22992be, type: 3}
+  m_Sprite: {fileID: -3478640575446010016, guid: dd576bef998b2a745b18d14528fad120, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -306,6 +306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af9cb8608d3beae49a3bc9dc094d294d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  autoClearInput: 1
 --- !u!114 &4368741751095711244
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -426,6 +427,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2a03eb9d93d9e54a947d5e3eda64c0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  actor: 0
+  interactionMask:
+    serializedVersion: 2
+    m_Bits: 0
+  scanRadius: 1.6
+  focusBuffer: 0.25
 --- !u!114 &4556200197474187075
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -499,6 +506,8 @@ MonoBehaviour:
   jump: {fileID: -2099379676528639254, guid: fb9f8419bbe06b64398c215bf1021799, type: 3}
   interact: {fileID: 1781555164194001046, guid: fb9f8419bbe06b64398c215bf1021799, type: 3}
   flashlightToggle: {fileID: 4195425015687588161, guid: fb9f8419bbe06b64398c215bf1021799, type: 3}
+  switchCharacter: {fileID: 0}
+  mergeToggle: {fileID: 0}
 --- !u!114 &1197262187892367512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -511,7 +520,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dab57e84a84d304792c821754b09882, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prompt: 'Press [E]'
+  requiredActor: 0
+  interactionType: 0
+  range: 1.2
+  priority: 0
+  holdDurationMs: 1000
+  cooldownMs: 300
+  isLocked: 0
+  persistent: 0
+  OnFocusEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  OnFocusExit:
+    m_PersistentCalls:
+      m_Calls: []
+  OnInteractStart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnInteractProgress:
+    m_PersistentCalls:
+      m_Calls: []
+  OnInteractComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  OnInteractCancel:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &908264575185905443
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -562,8 +596,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f1921d333325f4242b8c1c8097464216, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   flashlightPrefab: {fileID: 5294572869587209517, guid: f8ca8a9949338f1459af4be02c944740, type: 3}
   flashlightSocket: {fileID: 1889883586991102789}
   spawnOffset: {x: 0.25, y: 0.45}
@@ -583,8 +617,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 161b346d4f4c40779bbac8f05f53d11b, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5586993967952822058
 GameObject:
   m_ObjectHideFlags: 0
