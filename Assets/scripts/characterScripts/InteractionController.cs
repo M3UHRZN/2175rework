@@ -57,7 +57,7 @@ public class InteractionController : MonoBehaviour
         Vector2 origin = transform.position;
         candidates.Clear();
 
-        int count = Physics2D.OverlapCircle(origin, scanRadius, interactionMask, overlapResults, 0f);
+        int count = Physics2D.OverlapCircleNonAlloc(origin, scanRadius, overlapResults, interactionMask);
         for (int i = 0; i < count; i++)
         {
             var collider = overlapResults[i];
