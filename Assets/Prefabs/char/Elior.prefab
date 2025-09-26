@@ -111,6 +111,7 @@ GameObject:
   - component: {fileID: 7266910066312278373}
   - component: {fileID: 2756311409834166893}
   - component: {fileID: 572985784947357131}
+  - component: {fileID: 7267477753585598389}
   - component: {fileID: 4094748883903601663}
   - component: {fileID: 2870336855995386357}
   - component: {fileID: 892315661026642317}
@@ -381,13 +382,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 92ad357ba5a16cc4eb1018a5678c183a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   anim: {fileID: 2756311409834166893}
   spriteRenderer: {fileID: 2839424260411777706}
   invertX: 0
   flipByScale: 0
   flipRoot: {fileID: 0}
+--- !u!114 &7267477753585598389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4078480644037838795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19cb5d850fb49f79b4c3d09d2e55b41, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  animationFacade: {fileID: 0}
+  sensors: {fileID: 0}
+  locomotionMotor: {fileID: 0}
 --- !u!114 &4094748883903601663
 MonoBehaviour:
   m_ObjectHideFlags: 0
