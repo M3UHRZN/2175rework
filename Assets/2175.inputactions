@@ -88,7 +88,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "FlashLight",
+                    "name": "FlashlightToggle",
                     "type": "Button",
                     "id": "1ef1c65b-6633-436f-bc11-a087c5b36e9e",
                     "expectedControlType": "",
@@ -490,7 +490,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "FlashLight",
+                    "action": "FlashlightToggle",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

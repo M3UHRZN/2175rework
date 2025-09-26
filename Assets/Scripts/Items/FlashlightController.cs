@@ -25,7 +25,7 @@ public class FlashlightController : MonoBehaviour
     [SerializeField] float zDepth = 0f;
 
     [Tooltip("Fener yalnızca karakter aktif kontrol altındayken açılabilsin mi?")]
-    [SerializeField] bool onlyWhenActiveControlled = true;
+    [SerializeField] bool onlyWhenActiveControlled = false; // ŞİMDİLİK OFF - aktif karakter sistemi yok
 
     [Tooltip("Time.timeScale ≤ 0 olduğunda güncelleme döngüsü çalıştırılmaz.")]
     [SerializeField] bool respectPauseState = true;
@@ -51,6 +51,12 @@ public class FlashlightController : MonoBehaviour
         cachedCamera = Camera.main;
         cachedMouse = Mouse.current;
         CacheControlGate();
+        
+        // Debug bilgileri
+        if (cachedCamera == null)
+            Debug.LogWarning("[Flashlight] MainCamera bulunamadı - kameraya 'MainCamera' tag'i verin!", this);
+        if (input == null)
+            Debug.LogWarning("[Flashlight] InputAdapter bulunamadı!", this);
     }
 
     void OnEnable()
@@ -79,14 +85,22 @@ public class FlashlightController : MonoBehaviour
             return;
         }
 
-        if (input == null)
+        bool pressed = false;
+
+        // Önce InputAdapter'dan dene
+        if (input != null)
+            pressed = input.FlashlightTogglePressed;
+
+        // Fallback: InputAdapter hatalıysa klavyeden de dene
+        if (!pressed && Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
         {
-            return;
+            pressed = true;
+            Debug.Log("[Flashlight] F tuşu klavyeden algılandı (InputAdapter fallback)", this);
         }
 
         bool hasControl = !onlyWhenActiveControlled || HasControlAuthority();
 
-        if (input.FlashlightTogglePressed && hasControl)
+        if (pressed && hasControl)
         {
             Toggle();
         }
@@ -119,7 +133,7 @@ public class FlashlightController : MonoBehaviour
     {
         if (flashlightPrefab == null)
         {
-            Debug.LogWarning("Flashlight prefabı atanmamış.", this);
+            Debug.LogWarning("[Flashlight] Prefab atanmadı - Inspector'da flashlightPrefab alanını doldurun!", this);
             return;
         }
 
@@ -130,6 +144,8 @@ public class FlashlightController : MonoBehaviour
         Vector3 spawnPosition = GetPivotPosition();
         flashlightInstance.position = new Vector3(spawnPosition.x, spawnPosition.y, zDepth);
         UpdateFlashlightRotation(GetMouseWorldPosition(spawnPosition));
+        
+        Debug.Log("[Flashlight] Fener açıldı!", this);
     }
 
     void UpdateFlashlightTransform()
@@ -173,6 +189,7 @@ public class FlashlightController : MonoBehaviour
             return;
         }
 
+        Debug.Log("[Flashlight] Fener kapatıldı!", this);
         Destroy(flashlightInstance.gameObject);
         flashlightInstance = null;
     }
