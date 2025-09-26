@@ -7,6 +7,7 @@ public class AbilityController : MonoBehaviour
     Sensors2D sensors;
     LocomotionMotor2D motor;
     PlayerStateMachine fsm;
+    PlayerStateHooks hooks;
 
     JumpController jump;
     WallMovement wall;
@@ -21,6 +22,7 @@ public class AbilityController : MonoBehaviour
         sensors= GetComponent<Sensors2D>();
         motor  = GetComponent<LocomotionMotor2D>();
         fsm    = GetComponent<PlayerStateMachine>();
+        hooks  = GetComponent<PlayerStateHooks>();
 
         jump  = GetComponent<JumpController>();
         wall  = GetComponent<WallMovement>();
@@ -57,71 +59,17 @@ public class AbilityController : MonoBehaviour
         // 6. Interact
         interact?.Tick(dt);
 
-        // Default state resolution - sadece düşük öncelikli state'lerde çalışır
-        ResolveDefaultStates();
-    }
-
-    private void ResolveDefaultStates()
-    {
-        // Wall slide çıkış kontrolü
-        if (fsm.Current == PlayerStateMachine.LocoState.WallSlide)
+        // State çıkış kontrollerini PlayerStateHooks'a delege et
+        if (hooks != null)
         {
-            if (sensors.isGrounded)
-            {
-                fsm.RequestTransition(Mathf.Abs(input.MoveX) > 0.05f
-                    ? PlayerStateMachine.LocoState.Run
-                    : PlayerStateMachine.LocoState.Idle, "WallSlide->Grounded");
-                return;
-            }
-            
-            if (!sensors.wallLeft && !sensors.wallRight)
-            {
-                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "WallSlide->NoWall");
-                return;
-            }
+            hooks.CheckStateExits();
         }
 
-        // Wall climb çıkış kontrolü
-        if (fsm.Current == PlayerStateMachine.LocoState.WallClimb)
+        // Default state resolution - PlayerStateHooks'a delege et
+        if (hooks != null)
         {
-            if (!(sensors.onClimbableAny && (sensors.wallLeft || sensors.wallRight)))
-            {
-                if (!sensors.isGrounded && (sensors.wallLeft || sensors.wallRight))
-                    fsm.RequestTransition(PlayerStateMachine.LocoState.WallSlide, "WallClimb->Slide");
-                else
-                    fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "WallClimb->Fall");
-                return;
-            }
-        }
-
-        // Climb çıkış kontrolü
-        if (fsm.Current == PlayerStateMachine.LocoState.Climb)
-        {
-            if (!sensors.onLadder)
-            {
-                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "Climb->Fall");
-                return;
-            }
-        }
-
-        // Default state resolution - sadece düşük öncelikli state'lerde
-        if (fsm.Current == PlayerStateMachine.LocoState.Idle || 
-            fsm.Current == PlayerStateMachine.LocoState.Run ||
-            fsm.Current == PlayerStateMachine.LocoState.JumpRise ||
-            fsm.Current == PlayerStateMachine.LocoState.JumpFall)
-        {
-            if (sensors.isGrounded)
-            {
-                fsm.RequestTransition(Mathf.Abs(input.MoveX) > 0.05f
-                    ? PlayerStateMachine.LocoState.Run
-                    : PlayerStateMachine.LocoState.Idle, "Grounded");
-            }
-            else
-            {
-                fsm.RequestTransition(motor.velocityY > 0f
-                    ? PlayerStateMachine.LocoState.JumpRise
-                    : PlayerStateMachine.LocoState.JumpFall, "Airborne");
-            }
+            hooks.ResolveDefaultStates();
         }
     }
+
 }

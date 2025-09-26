@@ -15,11 +15,13 @@ public class PlayerStateMachine : MonoBehaviour
 
     Sensors2D sensors;
     LocomotionMotor2D motor;
+    PlayerStateHooks hooks;
 
     void Awake()
     {
         sensors = GetComponent<Sensors2D>();
         motor = GetComponent<LocomotionMotor2D>();
+        hooks = GetComponent<PlayerStateHooks>();
     }
 
     // State priority system - yüksek sayı = yüksek öncelik
@@ -49,8 +51,11 @@ public class PlayerStateMachine : MonoBehaviour
         // Context-aware transition rules
         if (CanTransitionFromTo(Current, target))
         {
-            // State çıkış mantığı
-            HandleStateExit(Current);
+            // State çıkış mantığı - PlayerStateHooks'a delege et
+            if (hooks != null)
+            {
+                hooks.HandleStateExit(Current);
+            }
             
             ForceSet(target);
             return true;
@@ -59,35 +64,6 @@ public class PlayerStateMachine : MonoBehaviour
         return false;
     }
 
-    private void HandleStateExit(LocoState exitingState)
-    {
-        switch (exitingState)
-        {
-            case LocoState.WallSlide:
-                // Wall slide çıkışında özel bir şey yapmaya gerek yok
-                // Motor zaten wall slide'ı otomatik durduruyor
-                break;
-                
-            case LocoState.WallClimb:
-                motor.StopWallClimbRestoreGravity();
-                break;
-                
-            case LocoState.Climb:
-                motor.RequestStopClimbRestoreGravity();
-                break;
-                
-            case LocoState.JumpRise:
-            case LocoState.JumpFall:
-                // Jump state'lerinden çıkışta özel bir şey yapmaya gerek yok
-                // Motor zaten gravity'yi otomatik yönetiyor
-                break;
-                
-            case LocoState.Idle:
-            case LocoState.Run:
-                // Ground state'lerden çıkışta özel bir şey yapmaya gerek yok
-                break;
-        }
-    }
 
     private bool CanTransitionFromTo(LocoState from, LocoState to)
     {
