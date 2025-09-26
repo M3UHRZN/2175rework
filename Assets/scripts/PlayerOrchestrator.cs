@@ -20,10 +20,8 @@ public class PlayerOrchestrator : MonoBehaviour
 
     void Update()
     {
-        input?.Collect();
         sensors?.Sample();
         abilities?.Tick(Time.deltaTime);
-        input?.ClearFrameEdges();
     }
 
     void FixedUpdate() => motor?.PhysicsStep(Time.fixedDeltaTime);
