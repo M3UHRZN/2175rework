@@ -73,11 +73,5 @@ public class AbilityController : MonoBehaviour
         // 6. Interact
         if (!loadout || abilities.canInteract)
             interact?.Tick(dt);
-
-        // State çıkış kontrollerini PlayerStateHooks'a delege et
-        if (hooks != null)
-        {
-            hooks.Tick(dt);
-        }
     }
 }

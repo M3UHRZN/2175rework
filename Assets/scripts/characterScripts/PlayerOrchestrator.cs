@@ -11,7 +11,7 @@ public class PlayerOrchestrator : MonoBehaviour
     AnimationStateSync animSync;
 
     [Tooltip("Automatically clear input edge states at the end of Update().")]
-    public bool autoClearInput = true;
+    public bool autoClearInput = false;
 
     void Awake()
     {
