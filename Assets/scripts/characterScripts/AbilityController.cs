@@ -4,8 +4,11 @@ using UnityEngine;
 public class AbilityController : MonoBehaviour
 {
     InputAdapter input;
+    Sensors2D sensors;
     AbilityLoadout loadout;
     LocomotionMotor2D motor;
+    PlayerStateMachine fsm;
+    PlayerStateHooks hooks;
 
     JumpController jump;
     WallMovement wall;
@@ -17,8 +20,11 @@ public class AbilityController : MonoBehaviour
     void Awake()
     {
         input  = GetComponent<InputAdapter>();
+        sensors= GetComponent<Sensors2D>();
         loadout = GetComponent<AbilityLoadout>();
         motor  = GetComponent<LocomotionMotor2D>();
+        fsm    = GetComponent<PlayerStateMachine>();
+        hooks  = GetComponent<PlayerStateHooks>();
 
         jump  = GetComponent<JumpController>();
         wall  = GetComponent<WallMovement>();
@@ -68,5 +74,10 @@ public class AbilityController : MonoBehaviour
         if (!loadout || abilities.canInteract)
             interact?.Tick(dt);
 
+        // State çıkış kontrollerini PlayerStateHooks'a delege et
+        if (hooks != null)
+        {
+            hooks.Tick(dt);
+        }
     }
 }
