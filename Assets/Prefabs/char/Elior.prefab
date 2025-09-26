@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: 6510864830213670626}
   - component: {fileID: 8347125427243334911}
   - component: {fileID: 7635455858464217097}
+  - component: {fileID: 5716932883752941117}
   m_Layer: 3
   m_Name: Elior
   m_TagString: Player
@@ -561,8 +562,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f1921d333325f4242b8c1c8097464216, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   flashlightPrefab: {fileID: 5294572869587209517, guid: f8ca8a9949338f1459af4be02c944740, type: 3}
   flashlightSocket: {fileID: 1889883586991102789}
   spawnOffset: {x: 0.25, y: 0.45}
@@ -572,6 +573,18 @@ MonoBehaviour:
   onlyWhenActiveControlled: 1
   respectPauseState: 1
   activeControlProvider: {fileID: 0}
+--- !u!114 &5716932883752941117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4078480644037838795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 161b346d4f4c40779bbac8f05f53d11b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!1 &5586993967952822058
 GameObject:
   m_ObjectHideFlags: 0

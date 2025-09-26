@@ -3040,6 +3040,7 @@ GameObject:
   - component: {fileID: 1292821051590130190}
   - component: {fileID: 5129869515329608655}
   - component: {fileID: 7979598358192054738}
+  - component: {fileID: 8208268991718563305}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -3394,6 +3395,7 @@ GameObject:
   - component: {fileID: 6510864831028020505}
   - component: {fileID: 8347125425876647684}
   - component: {fileID: 7635455859817274354}
+  - component: {fileID: 2741827823972161870}
   m_Layer: 3
   m_Name: Elior
   m_TagString: Player
@@ -3868,8 +3870,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f1921d333325f4242b8c1c8097464216, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   flashlightPrefab: {fileID: 5294572869587209517, guid: f8ca8a9949338f1459af4be02c944740, type: 3}
   flashlightSocket: {fileID: 1889883585121884350}
   spawnOffset: {x: 0.25, y: 0.45}
@@ -3879,6 +3881,18 @@ MonoBehaviour:
   onlyWhenActiveControlled: 1
   respectPauseState: 1
   activeControlProvider: {fileID: 0}
+--- !u!114 &2741827823972161870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4078480642110948400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 161b346d4f4c40779bbac8f05f53d11b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!4 &7709730263790419902
 Transform:
   m_ObjectHideFlags: 0
@@ -3920,9 +3934,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fcf8ea58b3e768043a5bd4b207b02020, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   wallJumpCfg: {fileID: 11400000, guid: 2cdf542ac7f73094195807409c83dc8a, type: 2}
+--- !u!114 &8208268991718563305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2734358688004659942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 161b346d4f4c40779bbac8f05f53d11b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!114 &8107148393402467773
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -6,6 +6,7 @@ public class PlayerOrchestrator : MonoBehaviour
     InputAdapter input;
     Sensors2D sensors;
     AbilityController abilities;
+    PlayerStateHooks stateHooks;
     LocomotionMotor2D motor;
     AnimationStateSync animSync;
 
@@ -17,6 +18,7 @@ public class PlayerOrchestrator : MonoBehaviour
         input    = GetComponent<InputAdapter>();
         sensors  = GetComponent<Sensors2D>();
         abilities= GetComponent<AbilityController>();
+        stateHooks = GetComponent<PlayerStateHooks>();
         motor    = GetComponent<LocomotionMotor2D>();
         animSync = GetComponent<AnimationStateSync>();
     }
@@ -26,6 +28,7 @@ public class PlayerOrchestrator : MonoBehaviour
         input?.Collect();
         sensors?.Sample();
         abilities?.Tick(Time.deltaTime);
+        stateHooks?.Tick(Time.deltaTime);
         if (autoClearInput)
             input?.ClearFrameEdges();
     }
