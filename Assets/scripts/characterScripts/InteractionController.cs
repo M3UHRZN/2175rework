@@ -38,7 +38,7 @@ public class InteractionController : MonoBehaviour
         input = GetComponent<InputAdapter>();
         loadout = GetComponent<AbilityLoadout>();
 
-        if (!interactionMask.value)
+        if (interactionMask.value == 0)
         {
             var sensors = GetComponent<Sensors2D>();
             if (sensors) interactionMask = sensors.interactMask;
@@ -57,7 +57,7 @@ public class InteractionController : MonoBehaviour
         Vector2 origin = transform.position;
         candidates.Clear();
 
-        int count = Physics2D.OverlapCircleNonAlloc(origin, scanRadius, overlapResults, interactionMask);
+        int count = Physics2D.OverlapCircle(origin, scanRadius, interactionMask, overlapResults, 0f);
         for (int i = 0; i < count; i++)
         {
             var collider = overlapResults[i];
