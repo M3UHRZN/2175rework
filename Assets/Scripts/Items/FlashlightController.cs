@@ -137,13 +137,14 @@ public class FlashlightController : MonoBehaviour
             return;
         }
 
-        Transform parent = (!followCursorPosition && flashlightSocket != null) ? flashlightSocket : null;
-        GameObject created = parent ? Instantiate(flashlightPrefab, parent) : Instantiate(flashlightPrefab);
-        flashlightInstance = created.transform;
+        // PİVOT: socket varsa onu kullan; yoksa offset'li oyuncu pozisyonu
+        Vector3 pivot = flashlightSocket ? flashlightSocket.position
+                                         : (transform.position + (Vector3)spawnOffset);
 
-        Vector3 spawnPosition = GetPivotPosition();
-        flashlightInstance.position = new Vector3(spawnPosition.x, spawnPosition.y, zDepth);
-        UpdateFlashlightRotation(GetMouseWorldPosition(spawnPosition));
+        var go = Instantiate(flashlightPrefab, pivot, Quaternion.identity);
+        flashlightInstance = go.transform;
+        flashlightInstance.position = new Vector3(pivot.x, pivot.y, zDepth);
+        UpdateFlashlightRotation(GetMouseWorldPosition(pivot));
         
         Debug.Log("[Flashlight] Fener açıldı!", this);
     }
@@ -155,13 +156,19 @@ public class FlashlightController : MonoBehaviour
 
         if (followCursorPosition)
         {
-            Vector2 ownerPosition = transform.position;
-            Vector2 desired = new(mouseWorld.x, mouseWorld.y);
-            Vector2 clamped = ClampToCircle(desired, ownerPosition, maxDistance);
-            flashlightInstance.position = new Vector3(clamped.x, clamped.y, zDepth);
+            // CLAMP MERKEZİ: pivot (socket varsa socket, yoksa offset'li oyuncu pozisyonu)
+            Vector2 center = (Vector2)pivotPosition;
+            Vector2 toMouse = (Vector2)mouseWorld - center;
+
+            if (toMouse.sqrMagnitude > maxDistance * maxDistance)
+                mouseWorld = (Vector3)(center + toMouse.normalized * maxDistance);
+
+            // Pozisyonu mouseWorld'e taşı; Z'yi sabitle
+            flashlightInstance.position = new Vector3(mouseWorld.x, mouseWorld.y, zDepth);
         }
         else
         {
+            // AimPivot modu: sokette dur, fareye dön
             flashlightInstance.position = new Vector3(pivotPosition.x, pivotPosition.y, zDepth);
         }
 
@@ -170,7 +177,8 @@ public class FlashlightController : MonoBehaviour
 
     void UpdateFlashlightRotation(Vector3 targetWorld)
     {
-        Vector3 origin = flashlightInstance != null ? flashlightInstance.position : GetPivotPosition();
+        // Origin her zaman pivot pozisyonu olmalı (socket varsa socket, yoksa offset'li oyuncu pozisyonu)
+        Vector3 origin = GetPivotPosition();
         Vector2 direction = new(targetWorld.x - origin.x, targetWorld.y - origin.y);
 
         if (direction.sqrMagnitude <= 0.0001f)
