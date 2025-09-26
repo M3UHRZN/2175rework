@@ -5,6 +5,7 @@ public class AbilityController : MonoBehaviour
 {
     InputAdapter input;
     Sensors2D sensors;
+    AbilityLoadout loadout;
     LocomotionMotor2D motor;
     PlayerStateMachine fsm;
     PlayerStateHooks hooks;
@@ -20,6 +21,7 @@ public class AbilityController : MonoBehaviour
     {
         input  = GetComponent<InputAdapter>();
         sensors= GetComponent<Sensors2D>();
+        loadout = GetComponent<AbilityLoadout>();
         motor  = GetComponent<LocomotionMotor2D>();
         fsm    = GetComponent<PlayerStateMachine>();
         hooks  = GetComponent<PlayerStateHooks>();
@@ -35,29 +37,42 @@ public class AbilityController : MonoBehaviour
     public void Tick(float dt)
     {
         // Base locomotion intent (yatay)
-        motor.RequestHorizontalIntent(input.MoveX);
+        AbilitySnapshot abilities = loadout ? loadout.ActiveSnapshot : AbilitySnapshot.AllEnabled;
+
+        bool movementLocked = interact && interact.MovementLocked;
+
+        if (abilities.canMove && !movementLocked)
+            motor.RequestHorizontalIntent(input.MoveX);
+        else
+            motor.RequestHorizontalIntent(0f);
 
         // Unified State Management - öncelik sırasına göre controller'ları çalıştır
         // Her controller sadece kendi state'ini request eder, FSM priority'ye göre karar verir
         
         
         // 1. WallClimb (WallSlide'dan önce)
-        wallClimb?.Tick(dt);
+        if (!loadout || (abilities.canWallClimb && !movementLocked))
+            wallClimb?.Tick(dt);
         
         // 2. WallSlide (WallClimb'dan sonra)
-        wall?.Tick(dt);
+        if (!loadout || (abilities.canWallSlide && !movementLocked))
+            wall?.Tick(dt);
         
         // 3. WallJump (WallSlide sırasında)
-        wallJump?.Tick(dt);
+        if (!loadout || (abilities.canWallJump && !movementLocked))
+            wallJump?.Tick(dt);
         
         // 4. Climb (Ladder)
-        climb?.Tick(dt);
+        if (!loadout || (abilities.canClimb && !movementLocked))
+            climb?.Tick(dt);
         
         // 5. Jump
-        jump?.Tick(dt);
+        if (!loadout || (abilities.canJump && !movementLocked))
+            jump?.Tick(dt);
         
         // 6. Interact
-        interact?.Tick(dt);
+        if (!loadout || abilities.canInteract)
+            interact?.Tick(dt);
 
         // State çıkış kontrollerini PlayerStateHooks'a delege et
         if (hooks != null)

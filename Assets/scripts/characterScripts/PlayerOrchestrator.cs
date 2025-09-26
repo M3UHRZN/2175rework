@@ -9,6 +9,9 @@ public class PlayerOrchestrator : MonoBehaviour
     LocomotionMotor2D motor;
     AnimationStateSync animSync;
 
+    [Tooltip("Automatically clear input edge states at the end of Update().")]
+    public bool autoClearInput = true;
+
     void Awake()
     {
         input    = GetComponent<InputAdapter>();
@@ -23,7 +26,8 @@ public class PlayerOrchestrator : MonoBehaviour
         input?.Collect();
         sensors?.Sample();
         abilities?.Tick(Time.deltaTime);
-        input?.ClearFrameEdges();
+        if (autoClearInput)
+            input?.ClearFrameEdges();
     }
 
     void FixedUpdate() => motor?.PhysicsStep(Time.fixedDeltaTime);
