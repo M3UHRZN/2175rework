@@ -85,6 +85,9 @@ public class FlashlightController : MonoBehaviour
             return;
         }
 
+        // InputAdapter'ı güncelle
+        input?.Collect();
+
         bool pressed = false;
 
         // Önce InputAdapter'dan dene
@@ -95,7 +98,6 @@ public class FlashlightController : MonoBehaviour
         if (!pressed && Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
         {
             pressed = true;
-            Debug.Log("[Flashlight] F tuşu klavyeden algılandı (InputAdapter fallback)", this);
         }
 
         bool hasControl = !onlyWhenActiveControlled || HasControlAuthority();
@@ -115,6 +117,9 @@ public class FlashlightController : MonoBehaviour
         {
             UpdateFlashlightTransform();
         }
+
+        // Input edge state'lerini temizle
+        input?.ClearFrameEdges();
     }
 
     void Toggle()
@@ -146,7 +151,6 @@ public class FlashlightController : MonoBehaviour
         flashlightInstance.position = new Vector3(pivot.x, pivot.y, zDepth);
         UpdateFlashlightRotation(GetMouseWorldPosition(pivot));
         
-        Debug.Log("[Flashlight] Fener açıldı!", this);
     }
 
     void UpdateFlashlightTransform()
@@ -197,7 +201,6 @@ public class FlashlightController : MonoBehaviour
             return;
         }
 
-        Debug.Log("[Flashlight] Fener kapatıldı!", this);
         Destroy(flashlightInstance.gameObject);
         flashlightInstance = null;
     }
