@@ -46,6 +46,8 @@ public class DualCharacterController : MonoBehaviour
 
     void Awake()
     {
+        EnsureCharactersAssigned();
+
         if (!animationFacade && elior)
             animationFacade = elior.GetComponent<AnimationFacade>();
 
@@ -73,6 +75,70 @@ public class DualCharacterController : MonoBehaviour
         splitSamples.Add(new Vector2(splitOffset.x, splitOffset.y + 0.5f));
         splitSamples.Add(new Vector2(-splitOffset.x, splitOffset.y + 0.5f));
         splitSamples.Add(Vector2.up * 0.5f);
+    }
+
+    void EnsureCharactersAssigned()
+    {
+        if (elior && sim)
+            return;
+
+        var candidates = new List<PlayerOrchestrator>();
+        candidates.AddRange(GetComponentsInChildren<PlayerOrchestrator>(true));
+
+        if (!elior || !sim)
+        {
+            foreach (var orchestrator in FindObjectsOfType<PlayerOrchestrator>(true))
+            {
+                if (!candidates.Contains(orchestrator))
+                    candidates.Add(orchestrator);
+            }
+        }
+
+        if (!elior)
+        {
+            foreach (var orchestrator in candidates)
+            {
+                if (!orchestrator)
+                    continue;
+                var name = orchestrator.name.ToLowerInvariant();
+                if (name.Contains("elior"))
+                {
+                    elior = orchestrator;
+                    break;
+                }
+            }
+        }
+
+        if (!sim)
+        {
+            foreach (var orchestrator in candidates)
+            {
+                if (!orchestrator || orchestrator == elior)
+                    continue;
+                var name = orchestrator.name.ToLowerInvariant();
+                if (name.Contains("sim"))
+                {
+                    sim = orchestrator;
+                    break;
+                }
+            }
+        }
+
+        if (!elior && candidates.Count > 0)
+            elior = candidates[0];
+
+        if (!sim)
+        {
+            for (int i = candidates.Count - 1; i >= 0; --i)
+            {
+                var candidate = candidates[i];
+                if (candidate && candidate != elior)
+                {
+                    sim = candidate;
+                    break;
+                }
+            }
+        }
     }
 
     void Start()
