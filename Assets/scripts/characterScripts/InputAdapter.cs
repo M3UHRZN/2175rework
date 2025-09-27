@@ -45,8 +45,16 @@ public class InputAdapter : MonoBehaviour
 
     public void Collect()
     {
+        // Component disable ise hiçbir şey yapma
+        if (!enabled)
+        {
+            Debug.Log($"[Input] {gameObject.name} - Component disabled, skipping collect");
+            return;
+        }
+        
         if (!InputEnabled)
         {
+            Debug.Log($"[Input] {gameObject.name} - Input disabled, clearing all inputs");
             MoveX = 0f;
             MoveY = 0f;
             JumpHeld = false;
@@ -63,6 +71,12 @@ public class InputAdapter : MonoBehaviour
         Vector2 mv = move ? move.action.ReadValue<Vector2>() : Vector2.zero;
         MoveX = Mathf.Clamp(mv.x, -1f, 1f);
         MoveY = Mathf.Clamp(mv.y, -1f, 1f);
+        
+        // Debug: Input değerlerini kontrol et
+        if (Mathf.Abs(MoveX) > 0.1f || Mathf.Abs(MoveY) > 0.1f)
+        {
+            Debug.Log($"[Input] {gameObject.name} - MoveX: {MoveX}, MoveY: {MoveY}");
+        }
         JumpHeld = jump && jump.action.IsPressed();
         JumpPressed = jump && jump.action.WasPressedThisFrame();
         bool interactEnabled = interact && interact.action != null;

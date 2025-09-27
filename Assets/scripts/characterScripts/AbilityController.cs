@@ -42,9 +42,22 @@ public class AbilityController : MonoBehaviour
         bool movementLocked = interact && interact.MovementLocked;
 
         if (abilities.canMove && !movementLocked)
+        {
             motor.RequestHorizontalIntent(input.MoveX);
+            // Debug: Movement intent
+            if (Mathf.Abs(input.MoveX) > 0.1f)
+            {
+                Debug.Log($"[AbilityController] {gameObject.name} - Requesting horizontal intent: {input.MoveX}");
+            }
+        }
         else
+        {
             motor.RequestHorizontalIntent(0f);
+            if (Mathf.Abs(input.MoveX) > 0.1f)
+            {
+                Debug.Log($"[AbilityController] {gameObject.name} - Movement locked or disabled, clearing intent");
+            }
+        }
 
         // Unified State Management - öncelik sırasına göre controller'ları çalıştır
         // Her controller sadece kendi state'ini request eder, FSM priority'ye göre karar verir

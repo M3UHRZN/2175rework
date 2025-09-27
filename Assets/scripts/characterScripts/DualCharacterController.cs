@@ -11,6 +11,7 @@ public class DualCharacterController : MonoBehaviour
 
     [Header("Animation")]
     public AnimationFacade animationFacade;
+    public bool useAnimTransitions = false;
     public string mergeTriggerName = "MergeTrigger";
     public string splitTriggerName = "SplitTrigger";
 
@@ -135,31 +136,55 @@ public class DualCharacterController : MonoBehaviour
     void ActivateCharacter(PlayerOrchestrator target)
     {
         active = target;
+        
+        // Input enable/disable - sadece aktif karakter input alabilir
         if (eliorInput)
-            eliorInput.InputEnabled = target == elior;
+        {
+            eliorInput.InputEnabled = (target == elior);
+            Debug.Log($"[DualController] Elior InputEnabled: {eliorInput.InputEnabled}");
+        }
         if (simInput)
-            simInput.InputEnabled = target == sim && sim && sim.gameObject.activeSelf;
+        {
+            simInput.InputEnabled = (target == sim && sim && sim.gameObject.activeSelf);
+            Debug.Log($"[DualController] Sim InputEnabled: {simInput.InputEnabled}");
+        }
 
+        Debug.Log($"[DualController] Active character: {active.name}");
         OnActiveCharacterChanged?.Invoke(active == elior ? "Elior" : "Sim");
     }
 
     void TrySwitchCharacter()
     {
+        Debug.Log($"[Switch] Deneme başladı - Merged: {isMerged}, Cooldown: {switchCooldownTimer}");
+        
         if (isMerged || switchCooldownTimer > 0f)
+        {
+            Debug.Log($"[Switch] Başarısız - Merged: {isMerged}, Cooldown: {switchCooldownTimer}");
             return;
+        }
 
         var sensors = active ? active.GetComponent<Sensors2D>() : null;
         if (sensors && !sensors.isGrounded)
+        {
+            Debug.Log($"[Switch] Başarısız - Yerde değil: {sensors.isGrounded}");
             return;
+        }
 
         var loadout = active ? active.GetComponent<AbilityLoadout>() : null;
         if (loadout != null && !loadout.ActiveSnapshot.canSwitchCharacter)
+        {
+            Debug.Log($"[Switch] Başarısız - canSwitchCharacter: {loadout.ActiveSnapshot.canSwitchCharacter}");
             return;
+        }
 
         PlayerOrchestrator next = active == elior ? sim : elior;
         if (!next || (next == sim && !sim.gameObject.activeSelf))
+        {
+            Debug.Log($"[Switch] Başarısız - Next karakter yok veya aktif değil");
             return;
+        }
 
+        Debug.Log($"[Switch] Başarılı - {active.name} -> {next.name}");
         ActivateCharacter(next);
         switchCooldownTimer = switchCooldown;
     }
@@ -205,8 +230,6 @@ public class DualCharacterController : MonoBehaviour
             eliorAbilities.ApplyMergedState(false);
 
         TriggerAnimation(splitTriggerName);
-        if (!animationFacade)
-            FinishSplit();
     }
 
     void TryMerge()
@@ -222,8 +245,6 @@ public class DualCharacterController : MonoBehaviour
 
         LockControl();
         TriggerAnimation(mergeTriggerName);
-        if (!animationFacade)
-            FinishMerge();
     }
 
     bool FindSplitPosition(out Vector3 position)
@@ -267,8 +288,17 @@ public class DualCharacterController : MonoBehaviour
 
     void TriggerAnimation(string trigger)
     {
-        if (animationFacade)
+        if (useAnimTransitions && animationFacade != null)
+        {
             animationFacade.Trigger(trigger);
+            return;
+        }
+        
+        // Fallback: anında bitir
+        if (trigger == splitTriggerName) 
+            FinishSplit();
+        else if (trigger == mergeTriggerName) 
+            FinishMerge();
     }
 
     public void OnMergeAnimFinished()
