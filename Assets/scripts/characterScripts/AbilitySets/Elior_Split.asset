@@ -15,7 +15,7 @@ MonoBehaviour:
   canMove: 1
   canJump: 1
   canWallSlide: 1
-  canWallClimb: 1
+  canWallClimb: 0
   canWallJump: 1
   canClimb: 1
   canInteract: 1
