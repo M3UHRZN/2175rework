@@ -25,7 +25,7 @@ public class FlashlightController : MonoBehaviour
     [SerializeField] float zDepth = 0f;
 
     [Tooltip("Fener yalnızca karakter aktif kontrol altındayken açılabilsin mi?")]
-    [SerializeField] bool onlyWhenActiveControlled = false; // ŞİMDİLİK OFF - aktif karakter sistemi yok
+    [SerializeField] bool onlyWhenActiveControlled = true; // Aktif karakter sistemi var
 
     [Tooltip("Time.timeScale ≤ 0 olduğunda güncelleme döngüsü çalıştırılmaz.")]
     [SerializeField] bool respectPauseState = true;
@@ -93,13 +93,6 @@ public class FlashlightController : MonoBehaviour
         // Önce InputAdapter'dan dene
         if (input != null)
             pressed = input.FlashlightTogglePressed;
-
-        // Fallback: InputAdapter hatalıysa klavyeden de dene
-        if (!pressed && Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
-        {
-            pressed = true;
-        }
-
         bool hasControl = !onlyWhenActiveControlled || HasControlAuthority();
 
         if (pressed && hasControl)

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [DisallowMultipleComponent]
-public class DualCharacterController : MonoBehaviour
+public class DualCharacterController : MonoBehaviour, FlashlightController.IActiveCharacterGate
 {
     [Header("Characters")]
     public PlayerOrchestrator elior;
@@ -44,6 +44,13 @@ public class DualCharacterController : MonoBehaviour
     public PlayerOrchestrator Active => active;
     public bool IsMerged => isMerged;
     public bool ControlLocked => controlLocked;
+
+    // IActiveCharacterGate implementation
+    public bool IsCharacterActive(GameObject character)
+    {
+        if (isMerged) return character == elior?.gameObject;
+        return character == active?.gameObject;
+    }
 
     void Awake()
     {
@@ -141,50 +148,31 @@ public class DualCharacterController : MonoBehaviour
         if (eliorInput)
         {
             eliorInput.InputEnabled = (target == elior);
-            Debug.Log($"[DualController] Elior InputEnabled: {eliorInput.InputEnabled}");
         }
         if (simInput)
         {
             simInput.InputEnabled = (target == sim && sim && sim.gameObject.activeSelf);
-            Debug.Log($"[DualController] Sim InputEnabled: {simInput.InputEnabled}");
         }
-
-        Debug.Log($"[DualController] Active character: {active.name}");
         OnActiveCharacterChanged?.Invoke(active == elior ? "Elior" : "Sim");
     }
 
     void TrySwitchCharacter()
     {
-        Debug.Log($"[Switch] Deneme başladı - Merged: {isMerged}, Cooldown: {switchCooldownTimer}");
-        
         if (isMerged || switchCooldownTimer > 0f)
-        {
-            Debug.Log($"[Switch] Başarısız - Merged: {isMerged}, Cooldown: {switchCooldownTimer}");
             return;
-        }
 
         var sensors = active ? active.GetComponent<Sensors2D>() : null;
         if (sensors && !sensors.isGrounded)
-        {
-            Debug.Log($"[Switch] Başarısız - Yerde değil: {sensors.isGrounded}");
             return;
-        }
 
         var loadout = active ? active.GetComponent<AbilityLoadout>() : null;
         if (loadout != null && !loadout.ActiveSnapshot.canSwitchCharacter)
-        {
-            Debug.Log($"[Switch] Başarısız - canSwitchCharacter: {loadout.ActiveSnapshot.canSwitchCharacter}");
             return;
-        }
 
         PlayerOrchestrator next = active == elior ? sim : elior;
         if (!next || (next == sim && !sim.gameObject.activeSelf))
-        {
-            Debug.Log($"[Switch] Başarısız - Next karakter yok veya aktif değil");
             return;
-        }
 
-        Debug.Log($"[Switch] Başarılı - {active.name} -> {next.name}");
         ActivateCharacter(next);
         switchCooldownTimer = switchCooldown;
     }
