@@ -67,6 +67,7 @@ public static class CameraAutoSetup
         }
 
         camera.Follow = follow;
+        Debug.Log($"Camera {name} follow target set to: {follow.name} (Position: {follow.position})");
         return camera;
     }
 
@@ -77,8 +78,8 @@ public static class CameraAutoSetup
             brain = camera.gameObject.AddComponent<Unity.Cinemachine.CinemachineBrain>();
         }
 
-        brain.DefaultBlend.BlendCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        brain.DefaultBlend.Duration = 0.5f;
+        brain.DefaultBlend = new Unity.Cinemachine.CinemachineBlendDefinition(
+            Unity.Cinemachine.CinemachineBlendDefinition.Styles.EaseInOut, 0.5f);
     }
 
     private static CinemachinePartySwitcher EnsureSwitcher(DualCharacterController party, CinemachineCamera merged, CinemachineCamera elior, CinemachineCamera sim)
