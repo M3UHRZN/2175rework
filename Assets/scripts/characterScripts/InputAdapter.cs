@@ -45,13 +45,6 @@ public class InputAdapter : MonoBehaviour
 
     public void Collect()
     {
-        // Component disable ise hiçbir şey yapma
-        if (!enabled)
-        {
-            Debug.Log($"[Input] {gameObject.name} - Component disabled, skipping collect");
-            return;
-        }
-        
         if (!InputEnabled)
         {
             Debug.Log($"[Input] {gameObject.name} - Input disabled, clearing all inputs");
