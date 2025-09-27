@@ -1640,7 +1640,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 716684323353272416, guid: 7ae117b6890bf084399445a3bee9cf03, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1248991931881357185, guid: 7ae117b6890bf084399445a3bee9cf03, type: 3}
       propertyPath: autoClearInput
@@ -2020,7 +2020,7 @@ Transform:
   m_GameObject: {fileID: 1664147595}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.8, y: 8.2, z: -14.55}
+  m_LocalPosition: {x: -10.235004, y: 3.8409438, z: -22.762222}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3664,9 +3664,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e3a677228f5ddd43a73958c316fe157, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 2
-  clampLeft: -37.26
-  clampRight: 6.09
 --- !u!1 &8141137848652299411
 GameObject:
   m_ObjectHideFlags: 0
