@@ -15,6 +15,20 @@ public class InteractionControllerEvent : UnityEvent<InteractionController> { }
 [System.Serializable]
 public class InteractionProgressEvent : UnityEvent<float> { }
 
+public enum PuzzleState
+{
+    Hazir,
+    Calisiyor,
+    Tamamlandi,
+    Basarisiz
+}
+
+[System.Serializable]
+public class PuzzleStateEvent : UnityEvent<PuzzleState> { }
+
+[System.Serializable]
+public class PuzzleStageEvent : UnityEvent<int> { }
+
 public class Interactable : MonoBehaviour
 {
     [Header("Interaction Settings")]
@@ -34,6 +48,24 @@ public class Interactable : MonoBehaviour
     [Header("Interaction Action")]
     public InteractionAction action;
 
+    [Header("Puzzle State")]
+    public PuzzleState baslangicBulmacaDurumu = PuzzleState.Hazir;
+    [SerializeField]
+    PuzzleState guncelBulmacaDurumu = PuzzleState.Hazir;
+    [Tooltip("Toplam aşama sayısı (1 = aşama kullanılmıyor).")]
+    public int toplamAsamaSayisi = 1;
+    [Tooltip("Etkileşim başladığında kullanılacak başlangıç aşaması indexi.")]
+    public int baslangicAsamaIndexi = 0;
+    [SerializeField]
+    int guncelAsamaIndexi = 0;
+
+    [Header("Puzzle Events")]
+    public PuzzleStateEvent BulmacaDurumuDegisti;
+    public UnityEvent BulmacaTamamlandi;
+    public UnityEvent BulmacaBasarisiz;
+    public UnityEvent BulmacaSifirlandi;
+    public PuzzleStageEvent AsamaDegisti;
+
     [Header("Events")]
     public InteractionControllerEvent OnFocusEnter;
     public InteractionControllerEvent OnFocusExit;
@@ -50,6 +82,19 @@ public class Interactable : MonoBehaviour
     public bool IsLocked => isLocked;
     public bool IsOnCooldown => cooldownRemaining > 0f;
     public bool ToggleState => toggleState;
+
+    void Awake()
+    {
+        ClampPuzzleConfiguration();
+        ResetBulmacaDurumu(false);
+    }
+
+    void OnValidate()
+    {
+        ClampPuzzleConfiguration();
+        guncelBulmacaDurumu = ClampPuzzleState(guncelBulmacaDurumu);
+        guncelAsamaIndexi = Mathf.Clamp(guncelAsamaIndexi, 0, Mathf.Max(1, toplamAsamaSayisi) - 1);
+    }
 
     public void Tick(float dtMs)
     {
@@ -88,7 +133,11 @@ public class Interactable : MonoBehaviour
 
     public void NotifyStart(InteractionController controller)
     {
+        if (!CanBeFocusedBy(controller))
+            return;
+
         var context = CreateContext(controller);
+        BeginBulmaca();
         GetActionInstance()?.OnStart(context);
         activeController = controller;
         OnInteractStart?.Invoke(controller);
@@ -98,6 +147,7 @@ public class Interactable : MonoBehaviour
     {
         var context = CreateContext(activeController);
         GetActionInstance()?.OnProgress(context, t);
+        GuncelleAsama(t);
         OnInteractProgress?.Invoke(t);
     }
 
@@ -105,6 +155,7 @@ public class Interactable : MonoBehaviour
     {
         var context = CreateContext(controller);
         GetActionInstance()?.OnComplete(context);
+        TamamlaBulmaca();
         OnInteractComplete?.Invoke(controller);
         if (activeController == controller)
             activeController = null;
@@ -114,6 +165,7 @@ public class Interactable : MonoBehaviour
     {
         var context = CreateContext(controller);
         GetActionInstance()?.OnCancel(context);
+        BasarisizBulmaca();
         OnInteractCancel?.Invoke(controller);
         if (activeController == controller)
             activeController = null;
@@ -153,6 +205,9 @@ public class Interactable : MonoBehaviour
 
     public bool CanExecute(InteractionController controller)
     {
+        if (!CanBeFocusedBy(controller))
+            return false;
+
         var instance = GetActionInstance();
         if (!instance)
             return true;
@@ -167,6 +222,47 @@ public class Interactable : MonoBehaviour
             return holdDurationMs;
         var context = CreateContext(controller);
         return instance.GetRequiredHoldDurationMs(context);
+    }
+
+    public PuzzleState GuncelBulmacaDurumu => guncelBulmacaDurumu;
+
+    public int GuncelAsamaIndexi => guncelAsamaIndexi;
+
+    public bool CanBeFocusedBy(InteractionController controller)
+    {
+        if (!controller)
+            return true;
+
+        if (guncelBulmacaDurumu == PuzzleState.Calisiyor && activeController && activeController != controller)
+            return false;
+
+        if (guncelBulmacaDurumu == PuzzleState.Tamamlandi && persistent)
+            return false;
+
+        return true;
+    }
+
+    public void ResetBulmacaDurumu(bool forceEvent = false)
+    {
+        bool stateChanged = SetBulmacaDurumu(baslangicBulmacaDurumu, forceEvent);
+        bool stageChanged = SetAsamaIndexi(Mathf.Clamp(baslangicAsamaIndexi, 0, StageCount - 1), forceEvent);
+
+        if ((stateChanged || stageChanged) || forceEvent)
+        {
+            BulmacaSifirlandi?.Invoke();
+        }
+    }
+
+    public int StageCount => Mathf.Max(1, toplamAsamaSayisi);
+
+    public void SetBulmacaDurumu(PuzzleState yeniDurum)
+    {
+        SetBulmacaDurumu(yeniDurum, false);
+    }
+
+    public void SetAsama(int yeniAsama)
+    {
+        SetAsamaIndexi(yeniAsama, false);
     }
 
     InteractionAction GetActionInstance()
@@ -211,5 +307,88 @@ public class Interactable : MonoBehaviour
     InteractionContext CreateContext(InteractionController controller)
     {
         return new InteractionContext(controller, this);
+    }
+
+    void BeginBulmaca()
+    {
+        bool wasInProgress = guncelBulmacaDurumu == PuzzleState.Calisiyor;
+        SetBulmacaDurumu(PuzzleState.Calisiyor);
+        if (!wasInProgress)
+        {
+            SetAsamaIndexi(Mathf.Clamp(baslangicAsamaIndexi, 0, StageCount - 1), false);
+        }
+    }
+
+    void TamamlaBulmaca()
+    {
+        SetBulmacaDurumu(PuzzleState.Tamamlandi);
+        BulmacaTamamlandi?.Invoke();
+
+        if (!persistent)
+        {
+            ResetBulmacaDurumu();
+        }
+    }
+
+    void BasarisizBulmaca()
+    {
+        SetBulmacaDurumu(PuzzleState.Basarisiz);
+        BulmacaBasarisiz?.Invoke();
+
+        if (!persistent)
+        {
+            ResetBulmacaDurumu();
+        }
+    }
+
+    void GuncelleAsama(float normalizedProgress)
+    {
+        if (StageCount <= 1)
+            return;
+
+        var hedef = Mathf.Clamp(Mathf.FloorToInt(Mathf.Clamp01(normalizedProgress) * StageCount), 0, StageCount - 1);
+        SetAsamaIndexi(hedef, false);
+    }
+
+    bool SetBulmacaDurumu(PuzzleState yeniDurum, bool forceEvent)
+    {
+        yeniDurum = ClampPuzzleState(yeniDurum);
+        if (!forceEvent && guncelBulmacaDurumu == yeniDurum)
+            return false;
+
+        guncelBulmacaDurumu = yeniDurum;
+        BulmacaDurumuDegisti?.Invoke(guncelBulmacaDurumu);
+        return true;
+    }
+
+    bool SetAsamaIndexi(int yeniAsama, bool forceEvent)
+    {
+        int clamped = Mathf.Clamp(yeniAsama, 0, StageCount - 1);
+        if (!forceEvent && guncelAsamaIndexi == clamped)
+            return false;
+
+        guncelAsamaIndexi = clamped;
+        AsamaDegisti?.Invoke(guncelAsamaIndexi);
+        return true;
+    }
+
+    PuzzleState ClampPuzzleState(PuzzleState durum)
+    {
+        switch (durum)
+        {
+            case PuzzleState.Hazir:
+            case PuzzleState.Calisiyor:
+            case PuzzleState.Tamamlandi:
+            case PuzzleState.Basarisiz:
+                return durum;
+            default:
+                return PuzzleState.Hazir;
+        }
+    }
+
+    void ClampPuzzleConfiguration()
+    {
+        toplamAsamaSayisi = Mathf.Max(1, toplamAsamaSayisi);
+        baslangicAsamaIndexi = Mathf.Clamp(baslangicAsamaIndexi, 0, toplamAsamaSayisi - 1);
     }
 }

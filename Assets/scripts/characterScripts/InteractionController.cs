@@ -134,7 +134,7 @@ public class InteractionController : MonoBehaviour
             focusedDistance = Vector2.Distance(origin, focused.transform.position);
         }
 
-        if (focused && (!AllowsActor(focused) || Vector2.Distance(origin, focused.transform.position) > focused.range + focusBuffer))
+        if (focused && (!AllowsActor(focused) || !focused.CanBeFocusedBy(this) || Vector2.Distance(origin, focused.transform.position) > focused.range + focusBuffer))
         {
             focused.NotifyFocusExit(this);
             focused = null;
@@ -194,7 +194,9 @@ public class InteractionController : MonoBehaviour
     {
         if (!interactable || interactable.IsLocked || interactable.IsOnCooldown)
             return false;
-        return interactable.AllowsActor(actor);
+        if (!interactable.AllowsActor(actor))
+            return false;
+        return interactable.CanBeFocusedBy(this);
     }
 
     bool HasAbilityFor(Interactable interactable, AbilitySnapshot abilities)
