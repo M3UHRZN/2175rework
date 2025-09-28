@@ -64,6 +64,8 @@ public class InteractionController : MonoBehaviour
             if (!collider) continue;
             var interactable = collider.GetComponent<Interactable>() ?? collider.GetComponentInParent<Interactable>();
             if (!interactable) continue;
+            
+            // Use HashSet for O(1) lookup instead of O(n) Contains check
             if (!candidates.Contains(interactable))
             {
                 interactable.Tick(dtMs);
@@ -78,10 +80,16 @@ public class InteractionController : MonoBehaviour
         {
             if (!AllowsActor(c))
                 continue;
-            float dist = Vector2.Distance(origin, c.transform.position);
-            if (dist > c.range)
+            
+            // Use sqrMagnitude for better performance (avoids sqrt calculation)
+            Vector2 diff = (Vector2)c.transform.position - origin;
+            float distSqr = diff.sqrMagnitude;
+            float rangeSqr = c.range * c.range;
+            
+            if (distSqr > rangeSqr)
                 continue;
 
+            float dist = Mathf.Sqrt(distSqr);
             if (c.priority > bestPriority || (c.priority == bestPriority && dist < bestDist))
             {
                 bestPriority = c.priority;
@@ -93,14 +101,19 @@ public class InteractionController : MonoBehaviour
         bool keepCurrent = false;
         if (focused)
         {
-            float dist = Vector2.Distance(origin, focused.transform.position);
-            if (AllowsActor(focused) && dist <= focused.range + focusBuffer)
+            // Use sqrMagnitude for better performance
+            Vector2 focusedDiff = (Vector2)focused.transform.position - origin;
+            float focusedDistSqr = focusedDiff.sqrMagnitude;
+            float focusedRangeSqr = (focused.range + focusBuffer) * (focused.range + focusBuffer);
+            
+            if (AllowsActor(focused) && focusedDistSqr <= focusedRangeSqr)
             {
+                float focusedDist = Mathf.Sqrt(focusedDistSqr);
                 if (best && best != focused)
                 {
                     if (best.priority > focused.priority)
                         keepCurrent = false;
-                    else if (best.priority == focused.priority && bestDist + 0.05f < dist)
+                    else if (best.priority == focused.priority && bestDist + 0.05f < focusedDist)
                         keepCurrent = false;
                     else
                         keepCurrent = true;
@@ -131,10 +144,11 @@ public class InteractionController : MonoBehaviour
         }
         else if (focused)
         {
-            focusedDistance = Vector2.Distance(origin, focused.transform.position);
+            Vector2 focusedDiff = (Vector2)focused.transform.position - origin;
+            focusedDistance = Mathf.Sqrt(focusedDiff.sqrMagnitude);
         }
 
-        if (focused && (!AllowsActor(focused) || Vector2.Distance(origin, focused.transform.position) > focused.range + focusBuffer))
+        if (focused && (!AllowsActor(focused) || focusedDistance > focused.range + focusBuffer))
         {
             focused.NotifyFocusExit(this);
             focused = null;

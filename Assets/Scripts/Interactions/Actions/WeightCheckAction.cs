@@ -13,14 +13,18 @@ public class WeightCheckAction : InteractActionBase
     [SerializeField] Transform failedVisual;
 
     static readonly Collider2D[] overlapBuffer = new Collider2D[16];
-    readonly ContactFilter2D contactFilter = new ContactFilter2D();
+    ContactFilter2D contactFilter;
 
     protected override void Awake()
     {
         base.Awake();
+        
+        // Initialize contact filter
+        contactFilter = new ContactFilter2D();
         contactFilter.useLayerMask = true;
         contactFilter.layerMask = massMask;
         contactFilter.useTriggers = true;
+        
         ApplyState(false);
     }
 
@@ -35,7 +39,7 @@ public class WeightCheckAction : InteractActionBase
         if (!checkArea)
             return false;
 
-        int count = checkArea.OverlapCollider(contactFilter, overlapBuffer);
+        int count = checkArea.Overlap(contactFilter, overlapBuffer);
         float totalMass = 0f;
         for (int i = 0; i < count; i++)
         {

@@ -1,15 +1,16 @@
 using UnityEngine;
-using UnityEngine.Profiling;
 using Interactions.Core;
 
 [RequireComponent(typeof(Interactable))]
 [AddComponentMenu("Interactions/Actions/Log Event Action")]
 public class LogEventAction : InteractActionBase
 {
-    static readonly ProfilerMarker startMarker = new ProfilerMarker("Interaction.Start");
-    static readonly ProfilerMarker progressMarker = new ProfilerMarker("Interaction.Progress");
-    static readonly ProfilerMarker completeMarker = new ProfilerMarker("Interaction.Complete");
-    static readonly ProfilerMarker cancelMarker = new ProfilerMarker("Interaction.Cancel");
+    [Header("Logging Settings")]
+    [SerializeField] bool logStart = true;
+    [SerializeField] bool logProgress = false;
+    [SerializeField] bool logComplete = true;
+    [SerializeField] bool logCancel = true;
+    [SerializeField] bool includeTimestamp = true;
 
     protected override void Awake()
     {
@@ -19,33 +20,45 @@ public class LogEventAction : InteractActionBase
 
     protected override void OnStart(InteractionController controller)
     {
-        using (startMarker.Auto())
+        if (logStart)
         {
-            Debug.Log($"Interaction start: {name}");
+            string message = $"Interaction start: {name}";
+            if (includeTimestamp)
+                message += $" [Time: {Time.time:F2}]";
+            Debug.Log(message);
         }
     }
 
     protected override void OnProgress(float value)
     {
-        using (progressMarker.Auto())
+        if (logProgress)
         {
-            Debug.Log($"Interaction progress {name}: {value:0.00}");
+            string message = $"Interaction progress {name}: {value:0.00}";
+            if (includeTimestamp)
+                message += $" [Time: {Time.time:F2}]";
+            Debug.Log(message);
         }
     }
 
     protected override void OnComplete(InteractionController controller)
     {
-        using (completeMarker.Auto())
+        if (logComplete)
         {
-            Debug.Log($"Interaction complete: {name}");
+            string message = $"Interaction complete: {name}";
+            if (includeTimestamp)
+                message += $" [Time: {Time.time:F2}]";
+            Debug.Log(message);
         }
     }
 
     protected override void OnCancel(InteractionController controller)
     {
-        using (cancelMarker.Auto())
+        if (logCancel)
         {
-            Debug.Log($"Interaction cancel: {name}");
+            string message = $"Interaction cancel: {name}";
+            if (includeTimestamp)
+                message += $" [Time: {Time.time:F2}]";
+            Debug.Log(message);
         }
     }
 }

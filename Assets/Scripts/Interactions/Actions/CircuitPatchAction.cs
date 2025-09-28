@@ -33,14 +33,16 @@ public class CircuitPatchAction : InteractActionBase
             return;
 
         Color color = active ? onColor : offColor;
+        propertyBlock.Clear();
+        propertyBlock.SetColor(colorProperty, color);
+        
         for (int i = 0; i < glowRenderers.Length; i++)
         {
             var renderer = glowRenderers[i];
             if (!renderer)
                 continue;
-            propertyBlock.Clear();
-            renderer.GetPropertyBlock(propertyBlock);
-            propertyBlock.SetColor(colorProperty, color);
+            
+            // Apply the same property block to all renderers for better performance
             renderer.SetPropertyBlock(propertyBlock);
             renderer.enabled = true;
         }
