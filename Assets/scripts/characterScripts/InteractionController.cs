@@ -159,7 +159,7 @@ public class InteractionController : MonoBehaviour
         }
 
         var abilities = loadout ? loadout.ActiveSnapshot : AbilitySnapshot.AllEnabled;
-        if (!HasAbilityFor(focused.interactionType, abilities))
+        if (!HasAbilityFor(focused, abilities))
         {
             if (holding)
                 CancelInteraction();
@@ -197,11 +197,14 @@ public class InteractionController : MonoBehaviour
         return interactable.AllowsActor(actor);
     }
 
-    bool HasAbilityFor(InteractionType type, AbilitySnapshot abilities)
+    bool HasAbilityFor(Interactable interactable, AbilitySnapshot abilities)
     {
-        switch (type)
+        if (!interactable)
+            return false;
+
+        switch (interactable.AbilityRequirement)
         {
-            case InteractionType.Panel:
+            case InteractionAbilityRequirement.Panel:
                 return abilities.canUsePanels;
             default:
                 return abilities.canInteract;
@@ -213,28 +216,25 @@ public class InteractionController : MonoBehaviour
         if (!focused)
             return;
 
-        switch (focused.interactionType)
+        if (!focused.CanExecute(this))
+            return;
+
+        focused.NotifyStart(this);
+
+        if (focused.ActionMode == InteractionActionMode.Hold)
         {
-            case InteractionType.Tap:
-                focused.NotifyStart(this);
-                focused.NotifyComplete(this);
-                focused.BeginCooldown();
-                break;
-            case InteractionType.Toggle:
-                focused.NotifyStart(this);
-                focused.NotifyComplete(this);
-                focused.BeginCooldown();
-                break;
-            case InteractionType.Hold:
-            case InteractionType.Panel:
-                holding = true;
-                holdElapsedMs = 0f;
-                holdRequiredMs = Mathf.Max(1f, focused.holdDurationMs);
-                movementLocked = focused.interactionType == InteractionType.Panel;
-                focused.NotifyStart(this);
-                holdProgress = 0f;
-                focused.NotifyProgress(0f);
-                break;
+            holding = true;
+            holdElapsedMs = 0f;
+            holdRequiredMs = Mathf.Max(1f, focused.GetRequiredHoldDurationMs(this));
+            movementLocked = focused.LocksMovement;
+            holdProgress = 0f;
+            focused.NotifyProgress(0f);
+        }
+        else
+        {
+            focused.NotifyProgress(1f);
+            focused.NotifyComplete(this);
+            focused.BeginCooldown();
         }
     }
 

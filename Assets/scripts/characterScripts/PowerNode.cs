@@ -54,7 +54,7 @@ public class PowerNode : MonoBehaviour
     {
         if (!controller)
             return;
-        if (interactable.interactionType == InteractionType.Toggle)
+        if (interactable.ActionMode == InteractionActionMode.Instant)
             return;
 
         if (powered)
