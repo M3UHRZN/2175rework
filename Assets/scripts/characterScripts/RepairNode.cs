@@ -16,9 +16,9 @@ public class RepairNode : MonoBehaviour
 
         if (interactable)
         {
-            interactable.OnInteractStart.AddListener(HandleStart);
-            interactable.OnInteractComplete.AddListener(HandleComplete);
-            interactable.OnInteractCancel.AddListener(HandleCancel);
+            interactable.EtkilesimBasladi.AddListener(HandleStart);
+            interactable.EtkilesimTamamlandi.AddListener(HandleComplete);
+            interactable.EtkilesimIptalEdildi.AddListener(HandleCancel);
         }
     }
 
@@ -26,9 +26,9 @@ public class RepairNode : MonoBehaviour
     {
         if (!interactable)
             return;
-        interactable.OnInteractStart.RemoveListener(HandleStart);
-        interactable.OnInteractComplete.RemoveListener(HandleComplete);
-        interactable.OnInteractCancel.RemoveListener(HandleCancel);
+        interactable.EtkilesimBasladi.RemoveListener(HandleStart);
+        interactable.EtkilesimTamamlandi.RemoveListener(HandleComplete);
+        interactable.EtkilesimIptalEdildi.RemoveListener(HandleCancel);
     }
 
     void HandleStart(InteractionController controller)
