@@ -116,6 +116,8 @@ public class InteractionController : MonoBehaviour
         {
             if (focused && focused != best)
             {
+                if (holding)
+                    CancelInteraction(focused);
                 focused.NotifyFocusExit(this);
             }
             focused = best;
@@ -136,7 +138,10 @@ public class InteractionController : MonoBehaviour
 
         if (focused && (!AllowsActor(focused) || !focused.CanBeFocusedBy(this) || Vector2.Distance(origin, focused.transform.position) > focused.range + focusBuffer))
         {
-            focused.NotifyFocusExit(this);
+            var previous = focused;
+            if (holding)
+                CancelInteraction(previous);
+            previous.NotifyFocusExit(this);
             focused = null;
             focusedDistance = 0f;
             holdProgress = 0f;
@@ -256,22 +261,25 @@ public class InteractionController : MonoBehaviour
 
     void CancelInteraction()
     {
-        if (!focused)
-        {
-            holding = false;
-            movementLocked = false;
-            return;
-        }
+        CancelInteraction(focused);
+    }
 
+    void CancelInteraction(Interactable target)
+    {
         holding = false;
         movementLocked = false;
         holdElapsedMs = 0f;
+        holdRequiredMs = 0f;
         holdProgress = 0f;
-        focused.NotifyCancel(this);
+
+        if (!target)
+            return;
+
+        target.NotifyCancel(this);
     }
 
     public void ForceCancelInteraction()
     {
-        CancelInteraction();
+        CancelInteraction(focused);
     }
 }

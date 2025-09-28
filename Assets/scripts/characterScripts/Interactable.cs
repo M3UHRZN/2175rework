@@ -31,24 +31,26 @@ public class PuzzleStageEvent : UnityEvent<int> { }
 
 public class Interactable : MonoBehaviour
 {
-    [Header("Interaction Settings")]
+    [Header("Etkileşim Ayarları")]
     public InteractionActor requiredActor = InteractionActor.Any;
     [FormerlySerializedAs("interactionType")]
     [SerializeField]
     InteractionType legacyInteractionType = InteractionType.Tap;
-    [Tooltip("Maximum usable range for this interactable.")]
+    [Tooltip("Bu etkileşimin kullanılabileceği maksimum mesafe.")]
     public float range = 1.2f;
     public int priority = 0;
+    [Tooltip("Basılı tutma gerektiren etkileşimler için süre (ms cinsinden).")]
     public float holdDurationMs = 1000f;
+    [Tooltip("Tamamlandıktan sonra yeniden kullanılmadan önceki bekleme süresi (ms cinsinden).")]
     public float cooldownMs = 300f;
     public bool isLocked = false;
-    [Tooltip("When true the interaction stays unlocked across sessions (handled externally).")]
+    [Tooltip("Doğruysa etkileşim sahne yeniden yüklendiğinde de kilitsiz kalır (haricen yönetilir).")]
     public bool persistent = false;
 
-    [Header("Interaction Action")]
+    [Header("Eylem Yapılandırması")]
     public InteractionAction action;
 
-    [Header("Puzzle State")]
+    [Header("Bulmaca Durumu")]
     public PuzzleState baslangicBulmacaDurumu = PuzzleState.Hazir;
     [SerializeField]
     PuzzleState guncelBulmacaDurumu = PuzzleState.Hazir;
@@ -59,20 +61,26 @@ public class Interactable : MonoBehaviour
     [SerializeField]
     int guncelAsamaIndexi = 0;
 
-    [Header("Puzzle Events")]
+    [Header("Bulmaca Olayları")]
     public PuzzleStateEvent BulmacaDurumuDegisti;
     public UnityEvent BulmacaTamamlandi;
     public UnityEvent BulmacaBasarisiz;
     public UnityEvent BulmacaSifirlandi;
     public PuzzleStageEvent AsamaDegisti;
 
-    [Header("Events")]
-    public InteractionControllerEvent OnFocusEnter;
-    public InteractionControllerEvent OnFocusExit;
-    public InteractionControllerEvent OnInteractStart;
-    public InteractionProgressEvent OnInteractProgress;
-    public InteractionControllerEvent OnInteractComplete;
-    public InteractionControllerEvent OnInteractCancel;
+    [Header("Etkileşim Olayları")]
+    [FormerlySerializedAs("OnFocusEnter")]
+    public InteractionControllerEvent OdakGirdi;
+    [FormerlySerializedAs("OnFocusExit")]
+    public InteractionControllerEvent OdakCikti;
+    [FormerlySerializedAs("OnInteractStart")]
+    public InteractionControllerEvent EtkilesimBasladi;
+    [FormerlySerializedAs("OnInteractProgress")]
+    public InteractionProgressEvent EtkilesimIlerlemeGuncellendi;
+    [FormerlySerializedAs("OnInteractComplete")]
+    public InteractionControllerEvent EtkilesimTamamlandi;
+    [FormerlySerializedAs("OnInteractCancel")]
+    public InteractionControllerEvent EtkilesimIptalEdildi;
 
     float cooldownRemaining;
     bool toggleState;
@@ -121,14 +129,14 @@ public class Interactable : MonoBehaviour
     {
         var context = CreateContext(controller);
         GetActionInstance()?.OnFocusEnter(context);
-        OnFocusEnter?.Invoke(controller);
+        OdakGirdi?.Invoke(controller);
     }
 
     public void NotifyFocusExit(InteractionController controller)
     {
         var context = CreateContext(controller);
         GetActionInstance()?.OnFocusExit(context);
-        OnFocusExit?.Invoke(controller);
+        OdakCikti?.Invoke(controller);
     }
 
     public void NotifyStart(InteractionController controller)
@@ -140,7 +148,7 @@ public class Interactable : MonoBehaviour
         BeginBulmaca();
         GetActionInstance()?.OnStart(context);
         activeController = controller;
-        OnInteractStart?.Invoke(controller);
+        EtkilesimBasladi?.Invoke(controller);
     }
 
     public void NotifyProgress(float t)
@@ -148,7 +156,7 @@ public class Interactable : MonoBehaviour
         var context = CreateContext(activeController);
         GetActionInstance()?.OnProgress(context, t);
         GuncelleAsama(t);
-        OnInteractProgress?.Invoke(t);
+        EtkilesimIlerlemeGuncellendi?.Invoke(t);
     }
 
     public void NotifyComplete(InteractionController controller)
@@ -156,7 +164,7 @@ public class Interactable : MonoBehaviour
         var context = CreateContext(controller);
         GetActionInstance()?.OnComplete(context);
         TamamlaBulmaca();
-        OnInteractComplete?.Invoke(controller);
+        EtkilesimTamamlandi?.Invoke(controller);
         if (activeController == controller)
             activeController = null;
     }
@@ -166,7 +174,7 @@ public class Interactable : MonoBehaviour
         var context = CreateContext(controller);
         GetActionInstance()?.OnCancel(context);
         BasarisizBulmaca();
-        OnInteractCancel?.Invoke(controller);
+        EtkilesimIptalEdildi?.Invoke(controller);
         if (activeController == controller)
             activeController = null;
     }
