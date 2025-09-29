@@ -25,7 +25,7 @@ public class CinemachinePartySwitcher : MonoBehaviour
         
         if (!party)
         {
-            party = FindObjectOfType<DualCharacterController>();
+            party = FindFirstObjectByType<DualCharacterController>();
             if (party)
                 DebugLog("DualCharacterController bulundu: " + party.name);
             else
@@ -109,7 +109,7 @@ public class CinemachinePartySwitcher : MonoBehaviour
         {
             DebugLog("Cinemachine kameraları otomatik bulunuyor...");
             
-            var allCinemachineCameras = FindObjectsOfType<Unity.Cinemachine.CinemachineCamera>();
+            var allCinemachineCameras = FindObjectsByType<Unity.Cinemachine.CinemachineCamera>(FindObjectsSortMode.None);
             DebugLog($"Sahnede {allCinemachineCameras.Length} Cinemachine kamerası bulundu");
             
             foreach (var cam in allCinemachineCameras)

@@ -45,11 +45,11 @@ public class Interactable : MonoBehaviour
     public InteractionControllerEvent OnInteractCancel;
 
     float cooldownRemaining;
-    bool toggleState;
+    bool isActivated;
 
     public bool IsLocked => isLocked;
     public bool IsOnCooldown => cooldownRemaining > 0f;
-    public bool ToggleState => toggleState;
+    public bool IsActivated => isActivated;
 
     public void Tick(float dtMs)
     {
@@ -94,14 +94,14 @@ public class Interactable : MonoBehaviour
         switch (interactionType)
         {
             case InteractionType.Toggle:
-                toggleState = !toggleState;
+                isActivated = !isActivated;
                 break;
             case InteractionType.Hold:
             case InteractionType.Panel:
-                toggleState = true;
+                isActivated = true;
                 break;
             default:
-                toggleState = false;
+                isActivated = false;
                 break;
         }
         OnInteractComplete?.Invoke(controller);
@@ -110,12 +110,12 @@ public class Interactable : MonoBehaviour
     public void NotifyCancel(InteractionController controller)
     {
         if (interactionType == InteractionType.Hold || interactionType == InteractionType.Panel)
-            toggleState = false;
+            isActivated = false;
         OnInteractCancel?.Invoke(controller);
     }
 
-    public void ForceToggleState(bool value)
+    public void ForceActivate(bool value)
     {
-        toggleState = value;
+        isActivated = value;
     }
 }
