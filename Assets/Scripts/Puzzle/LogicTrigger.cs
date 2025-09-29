@@ -1,47 +1,57 @@
-
 using UnityEngine;
 
-/// <summary>
-/// A component that acts as a trigger to change the state of a puzzle flag.
-/// This should be placed on an Interactable GameObject.
-/// </summary>
-public class LogicTrigger : MonoBehaviour
+namespace Puzzle
 {
-    public enum TriggerAction
-    {
-        SetTrue,
-        SetFalse,
-        Toggle
-    }
-
-    [Tooltip("The name of the flag in the PuzzleStateManager to modify.")]
-    public string flagName;
-
-    [Tooltip("The action to perform on the flag when triggered.")]
-    public TriggerAction action = TriggerAction.SetTrue;
-
     /// <summary>
-    /// This public method should be hooked up to a UnityEvent, like from an Interactable's OnInteractComplete.
+    /// A component that acts as a toggleable ILogicSource. Its state can be changed via the Trigger() method,
+    /// which is typically hooked up to a UnityEvent (e.g., from an Interactable's OnComplete event).
     /// </summary>
-    public void Trigger()
+    public class LogicTrigger : MonoBehaviour, ILogicSource
     {
-        if (string.IsNullOrEmpty(flagName))
+        public enum TriggerAction
         {
-            Debug.LogWarning("LogicTrigger has no flag name specified.", this);
-            return;
+            SetTrue,
+            SetFalse,
+            Toggle
         }
 
-        switch (action)
+        [Tooltip("The action to perform on this trigger's state when Trigger() is called.")]
+        public TriggerAction action = TriggerAction.Toggle;
+
+        [Tooltip("The initial state of the trigger when the scene loads.")]
+        [SerializeField] private bool _initialState = false;
+
+        private bool _currentState;
+
+        void Awake()
         {
-            case TriggerAction.SetTrue:
-                PuzzleStateManager.Instance.SetFlagState(flagName, true);
-                break;
-            case TriggerAction.SetFalse:
-                PuzzleStateManager.Instance.SetFlagState(flagName, false);
-                break;
-            case TriggerAction.Toggle:
-                PuzzleStateManager.Instance.ToggleFlagState(flagName);
-                break;
+            _currentState = _initialState;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this logic source is currently active.
+        /// Implements the ILogicSource interface.
+        /// </summary>
+        public bool IsActive => _currentState;
+
+        /// <summary>
+        /// This public method should be hooked up to a UnityEvent, like from an Interactable's OnInteractComplete.
+        /// It changes the internal state of this trigger.
+        /// </summary>
+        public void Trigger()
+        {
+            switch (action)
+            {
+                case TriggerAction.SetTrue:
+                    _currentState = true;
+                    break;
+                case TriggerAction.SetFalse:
+                    _currentState = false;
+                    break;
+                case TriggerAction.Toggle:
+                    _currentState = !_currentState;
+                    break;
+            }
         }
     }
 }

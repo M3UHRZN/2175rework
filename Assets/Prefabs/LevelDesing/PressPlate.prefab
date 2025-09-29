@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 350027533188651921}
   - component: {fileID: 7378659074609041742}
   - component: {fileID: 8983145290994899803}
-  - component: {fileID: 8633902456036734367}
   m_Layer: 8
   m_Name: PressPlate
   m_TagString: Untagged
@@ -150,7 +149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29eefbf00f3f1e24c86cc34b79ea323b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flagName: SimBasti
   requiredActor: 2
 --- !u!61 &7378659074609041742
 BoxCollider2D:
@@ -220,17 +218,3 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &8633902456036734367
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7697036678803119987}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be1ce245ec58c5242b23dd8115f57e5e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  flagName: SimBasti
-  boolParameterName: isPressed

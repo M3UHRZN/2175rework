@@ -1,65 +1,65 @@
-
 using UnityEngine;
 
-/// <summary>
-/// Triggers a puzzle flag when a physics object enters and exits a trigger collider.
-/// Can be filtered by the actor type (Elior, Sim) via the InteractionController.
-/// </summary>
-[RequireComponent(typeof(Collider2D))]
-public class PhysicsTrigger : MonoBehaviour
+namespace Puzzle
 {
-    [Header("Puzzle Settings")]
-    [Tooltip("The name of the flag in the PuzzleStateManager to modify.")]
-    public string flagName;
-
-    [Tooltip("Which character can activate this trigger?")]
-    public InteractionActor requiredActor = InteractionActor.Any;
-
-    private int _triggeringObjectCount = 0;
-
-    void Awake()
+    /// <summary>
+    /// An ILogicSource that becomes active when a specified physics object enters its trigger.
+    /// </summary>
+    [RequireComponent(typeof(Collider2D))]
+    public class PhysicsTrigger : MonoBehaviour, ILogicSource
     {
-        var col = GetComponent<Collider2D>();
-        if (!col.isTrigger)
+        [Tooltip("Which character can activate this trigger?")]
+        public InteractionActor requiredActor = InteractionActor.Any;
+
+        private int _triggeringObjectCount = 0;
+
+        /// <summary>
+        /// Gets a value indicating whether a valid object is currently inside the trigger.
+        /// Implements the ILogicSource interface.
+        /// </summary>
+        public bool IsActive => _triggeringObjectCount > 0;
+
+        void Awake()
         {
-            Debug.LogWarning($"The collider on {gameObject.name} must be set to 'Is Trigger' for PhysicsTrigger to work.", this);
+            var col = GetComponent<Collider2D>();
+            if (!col.isTrigger)
+            {
+                Debug.LogWarning($"The collider on {gameObject.name} must be set to 'Is Trigger' for PhysicsTrigger to work.", this);
+            }
         }
-    }
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (!CanTrigger(other.gameObject)) return;
-
-        _triggeringObjectCount++;
-
-        // Only set the flag on the first valid object entering
-        if (_triggeringObjectCount == 1)
+        private void OnTriggerEnter2D(Collider2D other)
         {
-            PuzzleStateManager.Instance.SetFlagState(flagName, true);
+            if (CanTrigger(other.gameObject))
+            {
+                _triggeringObjectCount++;
+            }
         }
-    }
 
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        if (!CanTrigger(other.gameObject)) return;
-
-        _triggeringObjectCount--;
-
-        // Only unset the flag when the last valid object leaves
-        if (_triggeringObjectCount <= 0)
+        private void OnTriggerExit2D(Collider2D other)
         {
-            _triggeringObjectCount = 0; // Clamp to zero
-            PuzzleStateManager.Instance.SetFlagState(flagName, false);
+            if (CanTrigger(other.gameObject))
+            {
+                _triggeringObjectCount--;
+                if (_triggeringObjectCount < 0)
+                {
+                    _triggeringObjectCount = 0;
+                }
+            }
         }
-    }
 
-    private bool CanTrigger(GameObject obj)
-    {
-        if (requiredActor == InteractionActor.Any) return true;
+        private bool CanTrigger(GameObject obj)
+        {
+            var controller = obj.GetComponent<InteractionController>();
+            if (controller == null) return false;
 
-        var controller = obj.GetComponent<InteractionController>();
-        if (controller == null) return false;
-
-        return controller.actor == requiredActor;
+            if (requiredActor == InteractionActor.Any)
+            {
+                // If 'Any' is selected, we still want to ensure it's a character, not just any physics object.
+                return controller.actor == InteractionActor.Elior || controller.actor == InteractionActor.Sim;
+            }
+            
+            return controller.actor == requiredActor;
+        }
     }
 }
