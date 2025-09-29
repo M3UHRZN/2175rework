@@ -96,7 +96,7 @@ public class MovingDoorController : MonoBehaviour
         {
             zaman += Time.deltaTime;
             float t = Mathf.Clamp01(zaman / sure);
-            float egriliT = hareketEgrisi ? hareketEgrisi.Evaluate(t) : t;
+            float egriliT = hareketEgrisi != null ? hareketEgrisi.Evaluate(t) : t;
             hedefParca.localPosition = Vector3.LerpUnclamped(baslangic, hedefKonum, egriliT);
             yield return null;
         }
