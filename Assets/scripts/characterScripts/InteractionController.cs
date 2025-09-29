@@ -5,17 +5,15 @@ using UnityEngine;
 public class InteractionController : MonoBehaviour
 {
     public InteractionActor actor = InteractionActor.Any;
-    public LayerMask interactionMask;
-    [Tooltip("Scan radius used to discover interactables.")]
-    public float scanRadius = 1.6f;
-    [Tooltip("Extra distance before focus is released to avoid jitter.")]
+    [Tooltip("Taranacak maksimum yarıçap.")]
+    public float scanRadius = 2f;
+    [Tooltip("Odak kaybını geciktirmek için ek tolerans (metre).")]
     public float focusBuffer = 0.25f;
 
     InputAdapter input;
     AbilityLoadout loadout;
 
-    readonly Collider2D[] overlapResults = new Collider2D[16];
-    readonly List<Interactable> candidates = new List<Interactable>(16);
+    readonly List<Interactable> adaylar = new List<Interactable>(32);
 
     Interactable focused;
     float focusedDistance;
@@ -37,12 +35,6 @@ public class InteractionController : MonoBehaviour
     {
         input = GetComponent<InputAdapter>();
         loadout = GetComponent<AbilityLoadout>();
-
-        if (interactionMask.value == 0)
-        {
-            var sensors = GetComponent<Sensors2D>();
-            if (sensors) interactionMask = sensors.interactMask;
-        }
     }
 
     public void Tick(float dt)
@@ -55,38 +47,33 @@ public class InteractionController : MonoBehaviour
     void UpdateFocus(float dtMs)
     {
         Vector2 origin = transform.position;
-        candidates.Clear();
-
-        int count = Physics2D.OverlapCircleNonAlloc(origin, scanRadius, overlapResults, interactionMask);
-        for (int i = 0; i < count; i++)
-        {
-            var collider = overlapResults[i];
-            if (!collider) continue;
-            var interactable = collider.GetComponent<Interactable>() ?? collider.GetComponentInParent<Interactable>();
-            if (!interactable) continue;
-            if (!candidates.Contains(interactable))
-            {
-                interactable.Tick(dtMs);
-                candidates.Add(interactable);
-            }
-        }
+        adaylar.Clear();
+        Interactable.ToplananEtkilesimleriDoldur(adaylar);
 
         Interactable best = null;
         float bestDist = float.MaxValue;
         int bestPriority = int.MinValue;
-        foreach (var c in candidates)
+
+        for (int i = 0; i < adaylar.Count; i++)
         {
-            if (!AllowsActor(c))
-                continue;
-            float dist = Vector2.Distance(origin, c.transform.position);
-            if (dist > c.range)
+            var interactable = adaylar[i];
+            if (!interactable)
                 continue;
 
-            if (c.priority > bestPriority || (c.priority == bestPriority && dist < bestDist))
+            if (!AllowsActor(interactable))
+                continue;
+
+            float dist = Vector2.Distance(origin, interactable.transform.position);
+            if (dist > scanRadius)
+                continue;
+            if (dist > interactable.range)
+                continue;
+
+            if (interactable.priority > bestPriority || (interactable.priority == bestPriority && dist < bestDist))
             {
-                bestPriority = c.priority;
+                bestPriority = interactable.priority;
                 bestDist = dist;
-                best = c;
+                best = interactable;
             }
         }
 
@@ -94,21 +81,34 @@ public class InteractionController : MonoBehaviour
         if (focused)
         {
             float dist = Vector2.Distance(origin, focused.transform.position);
-            if (AllowsActor(focused) && dist <= focused.range + focusBuffer)
+            bool icerde = dist <= Mathf.Max(focused.range, scanRadius) + focusBuffer;
+            if (!AllowsActor(focused) || !icerde)
             {
-                if (best && best != focused)
+                CancelAndClearFocus();
+            }
+            else if (best && best != focused)
+            {
+                if (best.priority > focused.priority)
                 {
-                    if (best.priority > focused.priority)
-                        keepCurrent = false;
-                    else if (best.priority == focused.priority && bestDist + 0.05f < dist)
-                        keepCurrent = false;
-                    else
-                        keepCurrent = true;
+                    keepCurrent = false;
+                }
+                else if (best.priority == focused.priority && bestDist + 0.05f < dist)
+                {
+                    keepCurrent = false;
                 }
                 else
                 {
                     keepCurrent = true;
                 }
+            }
+            else
+            {
+                keepCurrent = true;
+            }
+
+            if (keepCurrent)
+            {
+                focusedDistance = dist;
             }
         }
 
@@ -116,10 +116,12 @@ public class InteractionController : MonoBehaviour
         {
             if (focused && focused != best)
             {
+                var previous = focused;
                 if (holding)
-                    CancelInteraction(focused);
-                focused.NotifyFocusExit(this);
+                    CancelInteraction(previous);
+                previous.NotifyFocusExit(this);
             }
+
             focused = best;
             if (focused)
             {
@@ -136,20 +138,28 @@ public class InteractionController : MonoBehaviour
             focusedDistance = Vector2.Distance(origin, focused.transform.position);
         }
 
-        if (focused && (!AllowsActor(focused) || !focused.CanBeFocusedBy(this) || Vector2.Distance(origin, focused.transform.position) > focused.range + focusBuffer))
+        if (focused && !AllowsActor(focused))
         {
-            var previous = focused;
-            if (holding)
-                CancelInteraction(previous);
-            previous.NotifyFocusExit(this);
-            focused = null;
-            focusedDistance = 0f;
-            holdProgress = 0f;
+            CancelAndClearFocus();
         }
         else if (!focused)
         {
             holdProgress = 0f;
         }
+    }
+
+    void CancelAndClearFocus()
+    {
+        if (!focused)
+            return;
+
+        var previous = focused;
+        if (holding)
+            CancelInteraction(previous);
+        previous.NotifyFocusExit(this);
+        focused = null;
+        focusedDistance = 0f;
+        holdProgress = 0f;
     }
 
     void UpdateInteraction(float dtMs)
@@ -171,14 +181,14 @@ public class InteractionController : MonoBehaviour
             return;
         }
 
-        if (input.InteractPressed)
+        if (input && input.InteractPressed)
         {
             StartInteraction();
         }
 
         if (holding)
         {
-            if (input.InteractHeld)
+            if (input && input.InteractHeld)
             {
                 holdElapsedMs += dtMs;
                 holdProgress = Mathf.Clamp01(holdRequiredMs <= 0f ? 1f : holdElapsedMs / Mathf.Max(1f, holdRequiredMs));
@@ -188,7 +198,7 @@ public class InteractionController : MonoBehaviour
                     CompleteInteraction();
                 }
             }
-            else if (input.InteractReleased)
+            else if (input && input.InteractReleased)
             {
                 CancelInteraction();
             }
@@ -201,7 +211,9 @@ public class InteractionController : MonoBehaviour
             return false;
         if (!interactable.AllowsActor(actor))
             return false;
-        return interactable.CanBeFocusedBy(this);
+        if (!interactable.CanBeFocusedBy(this))
+            return false;
+        return true;
     }
 
     bool HasAbilityFor(Interactable interactable, AbilitySnapshot abilities)

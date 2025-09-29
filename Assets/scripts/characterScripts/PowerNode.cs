@@ -9,23 +9,38 @@ public class PowerNode : MonoBehaviour
 
     bool powered;
 
-    void Awake()
+    void OnEnable()
+    {
+        ResolveInteractable();
+        Subscribe();
+    }
+
+    void OnDisable()
+    {
+        Unsubscribe();
+    }
+
+    void ResolveInteractable()
     {
         if (!interactable)
             interactable = GetComponent<Interactable>();
-
-        if (interactable)
-        {
-            interactable.EtkilesimBasladi.AddListener(HandleStart);
-            interactable.EtkilesimTamamlandi.AddListener(HandleComplete);
-            interactable.EtkilesimIptalEdildi.AddListener(HandleCancel);
-        }
     }
 
-    void OnDestroy()
+    void Subscribe()
     {
         if (!interactable)
             return;
+
+        interactable.EtkilesimBasladi.AddListener(HandleStart);
+        interactable.EtkilesimTamamlandi.AddListener(HandleComplete);
+        interactable.EtkilesimIptalEdildi.AddListener(HandleCancel);
+    }
+
+    void Unsubscribe()
+    {
+        if (!interactable)
+            return;
+
         interactable.EtkilesimBasladi.RemoveListener(HandleStart);
         interactable.EtkilesimTamamlandi.RemoveListener(HandleComplete);
         interactable.EtkilesimIptalEdildi.RemoveListener(HandleCancel);
@@ -35,6 +50,7 @@ public class PowerNode : MonoBehaviour
     {
         if (!controller)
             return;
+
         if (!controller.CurrentAbilities.canSupplyPower)
         {
             controller.ForceCancelInteraction();
@@ -46,22 +62,17 @@ public class PowerNode : MonoBehaviour
         if (!controller || !controller.CurrentAbilities.canSupplyPower)
             return;
 
-        powered = interactable.ToggleState;
+        powered = interactable ? interactable.ToggleState : !powered;
         OnPowerChanged?.Invoke(powered);
     }
 
     void HandleCancel(InteractionController controller)
     {
-        if (!controller)
-            return;
-        if (interactable.ActionMode == InteractionActionMode.Instant)
+        if (!powered)
             return;
 
-        if (powered)
-        {
-            powered = false;
-            OnPowerChanged?.Invoke(false);
-        }
+        powered = false;
+        OnPowerChanged?.Invoke(false);
     }
 
     public bool IsPowered => powered;

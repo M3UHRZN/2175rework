@@ -9,23 +9,38 @@ public class RepairNode : MonoBehaviour
 
     bool repaired;
 
-    void Awake()
+    void OnEnable()
+    {
+        ResolveInteractable();
+        Subscribe();
+    }
+
+    void OnDisable()
+    {
+        Unsubscribe();
+    }
+
+    void ResolveInteractable()
     {
         if (!interactable)
             interactable = GetComponent<Interactable>();
-
-        if (interactable)
-        {
-            interactable.EtkilesimBasladi.AddListener(HandleStart);
-            interactable.EtkilesimTamamlandi.AddListener(HandleComplete);
-            interactable.EtkilesimIptalEdildi.AddListener(HandleCancel);
-        }
     }
 
-    void OnDestroy()
+    void Subscribe()
     {
         if (!interactable)
             return;
+
+        interactable.EtkilesimBasladi.AddListener(HandleStart);
+        interactable.EtkilesimTamamlandi.AddListener(HandleComplete);
+        interactable.EtkilesimIptalEdildi.AddListener(HandleCancel);
+    }
+
+    void Unsubscribe()
+    {
+        if (!interactable)
+            return;
+
         interactable.EtkilesimBasladi.RemoveListener(HandleStart);
         interactable.EtkilesimTamamlandi.RemoveListener(HandleComplete);
         interactable.EtkilesimIptalEdildi.RemoveListener(HandleCancel);
@@ -35,6 +50,7 @@ public class RepairNode : MonoBehaviour
     {
         if (!controller)
             return;
+
         if (!controller.CurrentAbilities.canRepair)
         {
             controller.ForceCancelInteraction();
@@ -52,13 +68,11 @@ public class RepairNode : MonoBehaviour
 
     void HandleCancel(InteractionController controller)
     {
-        if (!controller)
-            return;
-        if (!controller.CurrentAbilities.canRepair)
+        if (!repaired)
             return;
 
-        if (!repaired)
-            OnRepairedChanged?.Invoke(false);
+        repaired = false;
+        OnRepairedChanged?.Invoke(false);
     }
 
     public bool IsRepaired => repaired;
