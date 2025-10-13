@@ -46,7 +46,7 @@ public class PowerNode : MonoBehaviour
         if (!controller || !controller.CurrentAbilities.canSupplyPower)
             return;
 
-        powered = interactable.ToggleState;
+        powered = interactable.IsActivated;
         OnPowerChanged?.Invoke(powered);
     }
 

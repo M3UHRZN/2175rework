@@ -1,13 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public enum InteractionActor
-{
-    Any,
-    Elior,
-    Sim
-}
-
 public enum InteractionType
 {
     Tap,
@@ -33,6 +26,8 @@ public class Interactable : MonoBehaviour
     public float holdDurationMs = 1000f;
     public float cooldownMs = 300f;
     public bool isLocked = false;
+    [Tooltip("When true, the interactable will become locked after one successful completion.")]
+    public bool disableOnComplete = false;
     [Tooltip("When true the interaction stays unlocked across sessions (handled externally).")]
     public bool persistent = false;
 
@@ -45,11 +40,11 @@ public class Interactable : MonoBehaviour
     public InteractionControllerEvent OnInteractCancel;
 
     float cooldownRemaining;
-    bool toggleState;
+    bool isActivated;
 
     public bool IsLocked => isLocked;
     public bool IsOnCooldown => cooldownRemaining > 0f;
-    public bool ToggleState => toggleState;
+    public bool IsActivated => isActivated;
 
     public void Tick(float dtMs)
     {
@@ -94,28 +89,33 @@ public class Interactable : MonoBehaviour
         switch (interactionType)
         {
             case InteractionType.Toggle:
-                toggleState = !toggleState;
+                isActivated = !isActivated;
                 break;
             case InteractionType.Hold:
             case InteractionType.Panel:
-                toggleState = true;
+                isActivated = true;
                 break;
             default:
-                toggleState = false;
+                isActivated = false;
                 break;
         }
         OnInteractComplete?.Invoke(controller);
+
+        if (disableOnComplete)
+        {
+            isLocked = true;
+        }
     }
 
     public void NotifyCancel(InteractionController controller)
     {
         if (interactionType == InteractionType.Hold || interactionType == InteractionType.Panel)
-            toggleState = false;
+            isActivated = false;
         OnInteractCancel?.Invoke(controller);
     }
 
-    public void ForceToggleState(bool value)
+    public void ForceActivate(bool value)
     {
-        toggleState = value;
+        isActivated = value;
     }
 }

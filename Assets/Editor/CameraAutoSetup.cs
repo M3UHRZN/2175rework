@@ -9,7 +9,7 @@ public static class CameraAutoSetup
     [MenuItem(MenuPath)]
     public static void AutoCreatePartyVCams()
     {
-        var party = Object.FindObjectOfType<DualCharacterController>();
+        var party = Object.FindFirstObjectByType<DualCharacterController>();
         if (!party)
         {
             Debug.LogWarning("No DualCharacterController found in the scene.");

@@ -31,7 +31,7 @@ public class Sensors2D : MonoBehaviour
     public bool wallLeft { get; private set; }
     public bool wallRight { get; private set; }
     public bool onLadder { get; private set; }
-    public Interactable nearestInteractable { get; private set; }
+    public Interactable BestInteractable { get; private set; }
     public bool onClimbableLeft  { get; private set; }
     public bool onClimbableRight { get; private set; }
     public bool onClimbableAny   => onClimbableLeft || onClimbableRight;
@@ -41,6 +41,7 @@ public class Sensors2D : MonoBehaviour
     public Collider2D groundCollider { get; private set; }
 
     bool prevGrounded;
+    readonly Collider2D[] interactOverlap = new Collider2D[16];
 
     void Awake()
     {
@@ -81,15 +82,38 @@ public class Sensors2D : MonoBehaviour
 
 
         // Interactable (trigger)
-        nearestInteractable = null;
-        var colliders = Physics2D.OverlapCircleAll(transform.position, interactRad, interactMask);
-        float best = float.MaxValue;
-        foreach (var c in colliders)
+        FindBestInteractable();
+    }
+
+    void FindBestInteractable()
+    {
+        BestInteractable = null;
+        
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.SetLayerMask(interactMask);
+        filter.useTriggers = true; // NonAlloc version implicitly used triggers
+        
+        int count = Physics2D.OverlapCircle(transform.position, interactRad, filter, interactOverlap);
+
+        float bestDist = float.MaxValue;
+        int bestPriority = int.MinValue;
+
+        for (int i = 0; i < count; i++)
         {
-            var i = c.GetComponent<Interactable>() ?? c.GetComponentInParent<Interactable>();
-            if (!i) continue;
-            float d = Vector2.SqrMagnitude((Vector2)c.transform.position - (Vector2)transform.position);
-            if (d < best) { best = d; nearestInteractable = i; }
+            var c = interactOverlap[i];
+            var interactable = c.GetComponent<Interactable>() ?? c.GetComponentInParent<Interactable>();
+            if (!interactable) continue;
+
+            // Note: We don't check AllowsActor here, controller does that.
+            float dist = Vector2.Distance(transform.position, c.transform.position);
+            if (dist > interactable.range) continue;
+
+            if (interactable.priority > bestPriority || (interactable.priority == bestPriority && dist < bestDist))
+            {
+                bestPriority = interactable.priority;
+                bestDist = dist;
+                BestInteractable = interactable;
+            }
         }
     }
 
@@ -119,7 +143,7 @@ public class Sensors2D : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, 0.16f);
 
         // Interactable check
-        Gizmos.color = nearestInteractable ? Color.magenta : Color.white;
+        Gizmos.color = BestInteractable ? Color.magenta : Color.white;
         Gizmos.DrawWireSphere(transform.position, interactRad);
     }
 

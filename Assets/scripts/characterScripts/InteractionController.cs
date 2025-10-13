@@ -6,16 +6,12 @@ public class InteractionController : MonoBehaviour
 {
     public InteractionActor actor = InteractionActor.Any;
     public LayerMask interactionMask;
-    [Tooltip("Scan radius used to discover interactables.")]
-    public float scanRadius = 1.6f;
     [Tooltip("Extra distance before focus is released to avoid jitter.")]
     public float focusBuffer = 0.25f;
 
     InputAdapter input;
     AbilityLoadout loadout;
-
-    readonly Collider2D[] overlapResults = new Collider2D[16];
-    readonly List<Interactable> candidates = new List<Interactable>(16);
+    Sensors2D sensors;
 
     Interactable focused;
     float focusedDistance;
@@ -37,10 +33,10 @@ public class InteractionController : MonoBehaviour
     {
         input = GetComponent<InputAdapter>();
         loadout = GetComponent<AbilityLoadout>();
+        sensors = GetComponent<Sensors2D>();
 
         if (interactionMask.value == 0)
         {
-            var sensors = GetComponent<Sensors2D>();
             if (sensors) interactionMask = sensors.interactMask;
         }
     }
@@ -48,6 +44,14 @@ public class InteractionController : MonoBehaviour
     public void Tick(float dt)
     {
         float dtMs = dt * 1000f;
+
+        // Tick the cooldown of the currently focused interactable if it exists.
+        // Note: The responsibility of ticking all potential interactables is now in Sensors2D.
+        if (focused)
+        {
+            focused.Tick(dtMs);
+        }
+
         UpdateFocus(dtMs);
         UpdateInteraction(dtMs);
     }
@@ -55,59 +59,41 @@ public class InteractionController : MonoBehaviour
     void UpdateFocus(float dtMs)
     {
         Vector2 origin = transform.position;
-        candidates.Clear();
+        Interactable best = sensors ? sensors.BestInteractable : null;
 
-        int count = Physics2D.OverlapCircleNonAlloc(origin, scanRadius, overlapResults, interactionMask);
-        for (int i = 0; i < count; i++)
+        // We also need to tick the best candidate if it's not the one in focus,
+        // so its cooldown state is up-to-date for the AllowsActor check.
+        if (best && best != focused) 
         {
-            var collider = overlapResults[i];
-            if (!collider) continue;
-            var interactable = collider.GetComponent<Interactable>() ?? collider.GetComponentInParent<Interactable>();
-            if (!interactable) continue;
-            if (!candidates.Contains(interactable))
-            {
-                interactable.Tick(dtMs);
-                candidates.Add(interactable);
-            }
-        }
-
-        Interactable best = null;
-        float bestDist = float.MaxValue;
-        int bestPriority = int.MinValue;
-        foreach (var c in candidates)
-        {
-            if (!AllowsActor(c))
-                continue;
-            float dist = Vector2.Distance(origin, c.transform.position);
-            if (dist > c.range)
-                continue;
-
-            if (c.priority > bestPriority || (c.priority == bestPriority && dist < bestDist))
-            {
-                bestPriority = c.priority;
-                bestDist = dist;
-                best = c;
-            }
+            best.Tick(dtMs);
         }
 
         bool keepCurrent = false;
         if (focused)
         {
             float dist = Vector2.Distance(origin, focused.transform.position);
-            if (AllowsActor(focused) && dist <= focused.range + focusBuffer)
+            bool isStillValid = AllowsActor(focused) && dist <= focused.range + focusBuffer;
+
+            if (isStillValid)
             {
-                if (best && best != focused)
+                if (best == null || best == focused)
                 {
-                    if (best.priority > focused.priority)
-                        keepCurrent = false;
-                    else if (best.priority == focused.priority && bestDist + 0.05f < dist)
-                        keepCurrent = false;
-                    else
-                        keepCurrent = true;
+                    keepCurrent = true;
                 }
                 else
                 {
-                    keepCurrent = true;
+                    if (best.priority > focused.priority)
+                    {
+                        keepCurrent = false;
+                    }
+                    else if (best.priority == focused.priority && Vector2.Distance(origin, best.transform.position) < dist - 0.05f)
+                    {
+                        keepCurrent = false;
+                    }
+                    else
+                    {
+                        keepCurrent = true;
+                    }
                 }
             }
         }
@@ -116,12 +102,16 @@ public class InteractionController : MonoBehaviour
         {
             if (focused && focused != best)
             {
+                if (holding)
+                {
+                    CancelInteraction();
+                }
                 focused.NotifyFocusExit(this);
             }
             focused = best;
             if (focused)
             {
-                focusedDistance = bestDist;
+                focusedDistance = Vector2.Distance(origin, focused.transform.position);
                 focused.NotifyFocusEnter(this);
             }
             else
@@ -136,6 +126,10 @@ public class InteractionController : MonoBehaviour
 
         if (focused && (!AllowsActor(focused) || Vector2.Distance(origin, focused.transform.position) > focused.range + focusBuffer))
         {
+            if (holding)
+            {
+                CancelInteraction();
+            }
             focused.NotifyFocusExit(this);
             focused = null;
             focusedDistance = 0f;
@@ -254,18 +248,19 @@ public class InteractionController : MonoBehaviour
 
     void CancelInteraction()
     {
-        if (!focused)
-        {
-            holding = false;
-            movementLocked = false;
-            return;
-        }
+        var interactableToCancel = focused;
 
         holding = false;
         movementLocked = false;
+
+        if (interactableToCancel == null)
+        {
+            return;
+        }
+
         holdElapsedMs = 0f;
         holdProgress = 0f;
-        focused.NotifyCancel(this);
+        interactableToCancel.NotifyCancel(this);
     }
 
     public void ForceCancelInteraction()
