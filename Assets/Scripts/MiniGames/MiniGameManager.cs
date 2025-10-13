@@ -35,10 +35,10 @@ namespace MiniGames
         /// </summary>
         /// <param name="miniGamePrefab">The prefab of the mini-game to start.</param>
         /// <param name="player">The player who triggered the mini-game.</param>
-        public void StartMiniGame(GameObject miniGamePrefab, InteractionController player)
+        public void StartMiniGame(GameObject miniGame, InteractionController player)
         {
             if (_currentMiniGame != null)
-            { 
+            {
                 Debug.LogError("Cannot start a new mini-game while another is already running.");
                 return;
             }
@@ -56,9 +56,9 @@ namespace MiniGames
             if (playerHud) playerHud.SetActive(false);
             if (miniGameContainer) miniGameContainer.SetActive(true);
 
-            // Instantiate and setup the mini-game
-            GameObject miniGameInstance = Instantiate(miniGamePrefab, miniGameContainer.transform);
-            _currentMiniGame = miniGameInstance.GetComponent<BaseMiniGame>();
+            // Activate and setup the mini-game
+            miniGame.SetActive(true);
+            _currentMiniGame = miniGame.GetComponent<BaseMiniGame>();
 
             if (_currentMiniGame != null)
             {
@@ -66,7 +66,7 @@ namespace MiniGames
             }
             else
             {
-                Debug.LogError("The provided prefab does not contain a component derived from BaseMiniGame.", miniGamePrefab);
+                Debug.LogError("The provided GameObject does not contain a component derived from BaseMiniGame.", miniGame);
                 CloseCurrentMiniGame(); // Clean up if setup fails
             }
         }
@@ -84,12 +84,12 @@ namespace MiniGames
             {
                 _playerController.SendMessage("UnlockControl", SendMessageOptions.RequireReceiver);
             }
-            
+
             if (playerHud) playerHud.SetActive(true);
             if (miniGameContainer) miniGameContainer.SetActive(false);
 
-            // Clean up the mini-game instance
-            Destroy(_currentMiniGame.gameObject);
+            // Deactivate the mini-game instance instead of destroying it
+            _currentMiniGame.gameObject.SetActive(false);
             _currentMiniGame = null;
             _playerController = null;
         }
