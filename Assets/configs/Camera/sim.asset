@@ -12,9 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b46f2c0285ba85643aae335083d20096, type: 3}
   m_Name: sim
   m_EditorClassIdentifier: 
-  offset: {x: 0.8, y: 1.4}
-  lookahead: 0.8
-  followDamp: 0.18
-  fieldOfView: 65
-  yMin: -999
-  yMax: 999
+  followOffset: {x: 0, y: 0, z: -30}
+  positionDamping: 0.01
+  fov: 20
