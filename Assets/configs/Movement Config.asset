@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxRunSpeed: 12
   accelTime: 0.2
-  decelTime: 0.3
+  decelTime: 0.1
   airControl: 0.55
   gravityScale: 3.5
   wallSlideMaxFall: 2.5
