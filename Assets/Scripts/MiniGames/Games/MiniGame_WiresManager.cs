@@ -9,7 +9,7 @@ namespace MiniGames.Games
     public class MiniGame_WiresManager : BaseMiniGame, ILogicSource
     {
         [Header("Game Settings")]
-        [SerializeField] private int numberOfColors = 4;
+       // [SerializeField] private int numberOfColors = 4;
         [SerializeField] private List<Color> availableColors = new List<Color>();
         
         [Header("UI Elements")]
