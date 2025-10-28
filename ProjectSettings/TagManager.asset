@@ -41,5 +41,20 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: FarBackGround
+    uniqueID: 1750963285
+    locked: 0
+  - name: FarGround
+    uniqueID: 4110432361
+    locked: 0
+  - name: MiddleGround
+    uniqueID: 943900827
+    locked: 0
+  - name: FrontGround
+    uniqueID: 2935757223
+    locked: 0
+  - name: GameGround
+    uniqueID: 1961890147
+    locked: 0
   m_RenderingLayers:
   - Default
