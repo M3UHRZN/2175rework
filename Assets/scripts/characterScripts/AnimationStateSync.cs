@@ -21,6 +21,11 @@ public class AnimationStateSync : MonoBehaviour
     LocomotionMotor2D motor;
 
     Vector3 baseScale; // flipByScale için
+    
+    // Trigger reset tracking
+    private bool pendingJumpReset;
+    private bool pendingLandReset;
+    private bool pendingWallJumpReset;
 
     void Awake()
     {
@@ -38,16 +43,49 @@ public class AnimationStateSync : MonoBehaviour
             {
                 if (anim && anim.animator)
                 {
-                    if (newS == PlayerStateMachine.LocoState.JumpRise) anim.Trigger("Jump");
+                    // JumpRise'a GİRİŞTE trigger'ı setle
+                    if (newS == PlayerStateMachine.LocoState.JumpRise)
+                    {
+                        anim.Trigger("Jump");
+                        pendingJumpReset = true;
+                    }
+                    // JumpRise'tan ÇIKIŞTA reset'le
+                    else if (oldS == PlayerStateMachine.LocoState.JumpRise && pendingJumpReset)
+                    {
+                        anim.ResetTrigger("Jump");
+                        pendingJumpReset = false;
+                    }
+                    
+                    // WallJump reset - JumpRise'tan ÇIKIŞTA reset'le (wall jump'tan sonra)
+                    if (oldS == PlayerStateMachine.LocoState.JumpRise && pendingWallJumpReset)
+                    {
+                        anim.ResetTrigger("WallJump");
+                        pendingWallJumpReset = false;
+                    }
+                    
+                    // Land trigger - Idle/Run'a GİRİŞTE (just landed olduğunda)
                     if ((newS == PlayerStateMachine.LocoState.Idle || newS == PlayerStateMachine.LocoState.Run) && sensors.justLanded)
+                    {
                         anim.Trigger("Land");
+                        pendingLandReset = true;
+                    }
+                    // Land trigger reset - Idle/Run'tan ÇIKIŞTA
+                    else if ((oldS == PlayerStateMachine.LocoState.Idle || oldS == PlayerStateMachine.LocoState.Run) && pendingLandReset)
+                    {
+                        anim.ResetTrigger("Land");
+                        pendingLandReset = false;
+                    }
                 }
             };
             fsm.OnPhaseTriggered += (p) =>
             {
                 if (anim && anim.animator)
                 {
-                    if (p == PlayerStateMachine.PhaseState.WallJump)  anim.Trigger("WallJump");
+                    if (p == PlayerStateMachine.PhaseState.WallJump)
+                    {
+                        anim.Trigger("WallJump");
+                        pendingWallJumpReset = true;
+                    }
                 }
             };
         }

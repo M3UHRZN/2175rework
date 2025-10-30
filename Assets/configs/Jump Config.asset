@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cbae6b6b65daaf4a84597941eff820d, type: 3}
   m_Name: Jump Config
   m_EditorClassIdentifier: 
-  shortJumpHeight: 1.25
-  fullJumpHeight: 3.32
+  shortJumpHeight: 3.28
+  fullJumpHeight: 4
   jumpHoldMs: 180
   coyoteMs: 150
   bufferMs: 150
