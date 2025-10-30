@@ -56,5 +56,8 @@ TagManager:
   - name: GameGround
     uniqueID: 1961890147
     locked: 0
+  - name: player
+    uniqueID: 5765009
+    locked: 0
   m_RenderingLayers:
   - Default
