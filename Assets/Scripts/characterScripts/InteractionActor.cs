@@ -6,5 +6,7 @@ public enum InteractionActor
 {
     Any,
     Elior,
-    Sim
+    Sim,
+    Box,
+    Both
 }

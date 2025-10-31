@@ -118,4 +118,12 @@ public class Interactable : MonoBehaviour
     {
         isActivated = value;
     }
+
+    void OnDrawGizmosSelected()
+    {
+        // Range'yi görselleştirmek için sarı bir çember çiz
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, range);
+    }
+
 }

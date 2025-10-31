@@ -85,7 +85,7 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
 
     void Start()
     {
-        ForceMergedState();
+        ForceSplitState();
     }
 
     void Update()
@@ -121,7 +121,26 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
             ToggleMergeState();
     }
 
-    void ForceMergedState()
+    void ForceSplitState()
+    {
+        isMerged = false;
+        controlLocked = false;
+        switchCooldownTimer = 0f;
+        mergeCooldownTimer = 0f;
+
+        if (sim)
+            sim.gameObject.SetActive(true);
+
+        if (eliorAbilities != null)
+            eliorAbilities.Initialise(true);
+        if (simAbilities != null)
+            simAbilities.Initialise(true);
+
+        ActivateCharacter(elior);
+        OnMergedStateChanged?.Invoke(true);
+    }
+
+        void ForceMergedState()
     {
         isMerged = true;
         controlLocked = false;
