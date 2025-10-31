@@ -14,7 +14,7 @@ AnimatorStateMachine:
     m_Position: {x: 170, y: 90, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 2799474791243376431}
-    m_Position: {x: 240, y: 260, z: 0}
+    m_Position: {x: 320, y: 220, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8418010217367420539}
     m_Position: {x: 370, y: -30, z: 0}
@@ -149,7 +149,7 @@ BlendTree:
     m_DirectBlendParameter: SpeedX
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: 1072352f75b63714796e8ae8e058676a, type: 2}
+    m_Motion: {fileID: 7400000, guid: 003fa13304b7fd34a80a26130c78593c, type: 2}
     m_Threshold: 1
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
@@ -381,7 +381,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: idle
-  m_Speed: 0.2
+  m_Speed: 0.16
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 4070041472877952594}

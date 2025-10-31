@@ -1,40 +1,34 @@
 fileFormatVersion: 2
-guid: 537635f8cf432da4ab333504faff47fd
+guid: f77e9933bc55c8f41ba038d18e97f705
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1397239659937550135
-    second: dis_mekan_merdiven_cart_curt_0
+      213: 112053323466822632
+    second: Runruneliorrun_0
   - first:
-      213: -1283825908511206984
-    second: dis_mekan_merdiven_cart_curt_1
+      213: -2916709846172606261
+    second: Runruneliorrun_1
   - first:
-      213: -997678791617270719
-    second: dis_mekan_merdiven_cart_curt_2
+      213: -5916370969113249493
+    second: Runruneliorrun_2
   - first:
-      213: 6275012192135060157
-    second: dis_mekan_merdiven_cart_curt_3
+      213: 2422599550045593096
+    second: Runruneliorrun_3
   - first:
-      213: 5786427889842121639
-    second: dis_mekan_merdiven_cart_curt_4
+      213: 5399781012525827638
+    second: Runruneliorrun_4
   - first:
-      213: 7505094343685942863
-    second: dis_mekan_merdiven_cart_curt_5
+      213: 6003184196895430946
+    second: Runruneliorrun_5
   - first:
-      213: 9153567862098535620
-    second: dis_mekan_merdiven_cart_curt_6
+      213: -1005969947613741261
+    second: Runruneliorrun_6
   - first:
-      213: -2861981197105662424
-    second: dis_mekan_merdiven_cart_curt_7
+      213: 4320604293013572298
+    second: Runruneliorrun_7
   - first:
-      213: -1848036504562282002
-    second: dis_mekan_merdiven_cart_curt_8
-  - first:
-      213: -8770302725853542301
-    second: dis_mekan_merdiven_cart_curt_9
-  - first:
-      213: 2032104688589856424
-    second: dis_mekan_merdiven_cart_curt_10
+      213: -4852944094244096718
+    second: Runruneliorrun_8
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -102,7 +96,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -130,243 +124,199 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_0
+      name: Runruneliorrun_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 1802
-        width: 320
-        height: 178
+        x: 89
+        y: 319
+        width: 152
+        height: 302
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9c0b553aee10c9ce0800000000000000
-      internalID: -1397239659937550135
+      spriteID: 8e3542d67e71e8100800000000000000
+      internalID: 112053323466822632
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_1
+      name: Runruneliorrun_1
       rect:
         serializedVersion: 2
-        x: 0
-        y: 1623
-        width: 320
-        height: 40
+        x: 409
+        y: 319
+        width: 152
+        height: 312
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8b11fb1632fee2ee0800000000000000
-      internalID: -1283825908511206984
+      spriteID: bc06ff929d3c587d0800000000000000
+      internalID: -2916709846172606261
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_2
+      name: Runruneliorrun_2
       rect:
         serializedVersion: 2
-        x: 0
-        y: 1601
-        width: 320
-        height: 16
+        x: 689
+        y: 319
+        width: 222
+        height: 272
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 14c26b9cc688722f0800000000000000
-      internalID: -997678791617270719
+      spriteID: b29329a23f3d4eda0800000000000000
+      internalID: -5916370969113249493
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_3
+      name: Runruneliorrun_3
       rect:
         serializedVersion: 2
-        x: 144
-        y: 1353
-        width: 16
-        height: 39
+        x: 1009
+        y: 319
+        width: 192
+        height: 292
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: dba9471a752551750800000000000000
-      internalID: 6275012192135060157
+      spriteID: 80e1d7d847dce9120800000000000000
+      internalID: 2422599550045593096
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_4
+      name: Runruneliorrun_4
       rect:
         serializedVersion: 2
-        x: 170
-        y: 1196
-        width: 70
-        height: 16
+        x: 1389
+        y: 319
+        width: 122
+        height: 292
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7abe37c02858d4050800000000000000
-      internalID: 5786427889842121639
+      spriteID: 636408cb830efea40800000000000000
+      internalID: 5399781012525827638
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_5
+      name: Runruneliorrun_5
       rect:
         serializedVersion: 2
-        x: 28
-        y: 1054
-        width: 70
-        height: 16
+        x: 1689
+        y: 319
+        width: 172
+        height: 282
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f4ea139ba83772860800000000000000
-      internalID: 7505094343685942863
+      spriteID: 229d03988389f4350800000000000000
+      internalID: 6003184196895430946
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_6
+      name: Runruneliorrun_6
       rect:
         serializedVersion: 2
-        x: 20
-        y: 720
-        width: 16
-        height: 180
+        x: 1979
+        y: 319
+        width: 212
+        height: 282
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4c4a0df0971080f70800000000000000
-      internalID: 9153567862098535620
+      spriteID: 33fb3c999a31a02f0800000000000000
+      internalID: -1005969947613741261
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_7
+      name: Runruneliorrun_7
       rect:
         serializedVersion: 2
-        x: 87
-        y: 540
-        width: 16
-        height: 180
+        x: 2329
+        y: 319
+        width: 152
+        height: 302
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8267ba0c3433848d0800000000000000
-      internalID: -2861981197105662424
+      spriteID: aca0a1486bed5fb30800000000000000
+      internalID: 4320604293013572298
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_8
+      name: Runruneliorrun_8
       rect:
         serializedVersion: 2
-        x: 173
-        y: 421
-        width: 16
-        height: 48
+        x: 109
+        y: 0
+        width: 122
+        height: 291
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ee15c9527947a56e0800000000000000
-      internalID: -1848036504562282002
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_9
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 180
-        width: 320
-        height: 30
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3680cdc4320a94680800000000000000
-      internalID: -8770302725853542301
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: dis_mekan_merdiven_cart_curt_10
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 16
-        width: 320
-        height: 14
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 8aeddcd927c733c10800000000000000
-      internalID: 2032104688589856424
+      spriteID: 23530cbee01e6acb0800000000000000
+      internalID: -4852944094244096718
       vertices: []
       indices: 
       edges: []
@@ -375,7 +325,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: c03c6723a5b8ab34c936d0e7606f0a14
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -385,17 +335,15 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      dis_mekan_merdiven_cart_curt_0: -1397239659937550135
-      dis_mekan_merdiven_cart_curt_1: -1283825908511206984
-      dis_mekan_merdiven_cart_curt_10: 2032104688589856424
-      dis_mekan_merdiven_cart_curt_2: -997678791617270719
-      dis_mekan_merdiven_cart_curt_3: 6275012192135060157
-      dis_mekan_merdiven_cart_curt_4: 5786427889842121639
-      dis_mekan_merdiven_cart_curt_5: 7505094343685942863
-      dis_mekan_merdiven_cart_curt_6: 9153567862098535620
-      dis_mekan_merdiven_cart_curt_7: -2861981197105662424
-      dis_mekan_merdiven_cart_curt_8: -1848036504562282002
-      dis_mekan_merdiven_cart_curt_9: -8770302725853542301
+      Runruneliorrun_0: 112053323466822632
+      Runruneliorrun_1: -2916709846172606261
+      Runruneliorrun_2: -5916370969113249493
+      Runruneliorrun_3: 2422599550045593096
+      Runruneliorrun_4: 5399781012525827638
+      Runruneliorrun_5: 6003184196895430946
+      Runruneliorrun_6: -1005969947613741261
+      Runruneliorrun_7: 4320604293013572298
+      Runruneliorrun_8: -4852944094244096718
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
