@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   followOffset: {x: 0, y: 3, z: -25}
   positionDamping: 0.15
-  fov: 38
+  fov: 60
