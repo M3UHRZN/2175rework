@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac6230cd0f07e1a4c957beda731a8ab0, type: 3}
   m_Name: Movement Config
   m_EditorClassIdentifier: 
-  maxRunSpeed: 8
+  maxRunSpeed: 10
   accelTime: 0.2
   decelTime: 0.1
   airControl: 0.55

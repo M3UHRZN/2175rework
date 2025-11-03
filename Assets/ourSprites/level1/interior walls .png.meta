@@ -1,16 +1,10 @@
 fileFormatVersion: 2
-guid: ad65dcf546ef3874aa15143f36b7b95c
+guid: efab97f7ca780184a8f882af1b12ac76
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4569151267882470824
-    second: asansor_0
-  - first:
-      213: -1033496068003384883
-    second: asansor_1
-  - first:
-      213: -6388186570496086113
-    second: asansor_2
+      213: 4661431902811781955
+    second: interior walls _0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -54,7 +48,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 10
@@ -106,67 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: asansor_0
+      name: walls
       rect:
         serializedVersion: 2
-        x: 0
-        y: 44
-        width: 57
-        height: 63
+        x: 1
+        y: 1
+        width: 131
+        height: 179
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8ad0927aed2e86f30800000000000000
-      internalID: 4569151267882470824
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: asansor_1
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 18
-        height: 44
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: dc135e54dc848a1f0800000000000000
-      internalID: -1033496068003384883
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: asansor_2
-      rect:
-        serializedVersion: 2
-        x: 17
-        y: 0
-        width: 18
-        height: 44
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f9fe8a2092a9857a0800000000000000
-      internalID: -6388186570496086113
+      spriteID: 34bf4c74e9bb0b040800000000000000
+      internalID: 4661431902811781955
       vertices: []
       indices: 
       edges: []
@@ -175,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: f0da0cf19e110f743a1f8c924baa28fa
     internalID: 0
     vertices: []
     indices: 
@@ -185,9 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      asansor_0: 4569151267882470824
-      asansor_1: -1033496068003384883
-      asansor_2: -6388186570496086113
+      walls: 4661431902811781955
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

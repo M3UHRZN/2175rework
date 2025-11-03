@@ -78,10 +78,10 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 14
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -196,7 +196,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: arka planlar_4
+      name: ladder
       rect:
         serializedVersion: 2
         x: 92
@@ -328,10 +328,10 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: arka planlar_0
+      name: box c
       rect:
         serializedVersion: 2
-        x: 233
+        x: 234
         y: 54
         width: 32
         height: 32
@@ -350,7 +350,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: arka planlar_7
+      name: box o
       rect:
         serializedVersion: 2
         x: 273
@@ -539,7 +539,6 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      arka planlar_0: 7648195282617278548
       arka planlar_1: 8471618798473616647
       arka planlar_12: -1915846728
       arka planlar_13: -1106848941
@@ -547,10 +546,10 @@ TextureImporter:
       arka planlar_15: 880812347
       arka planlar_2: 967588261259149638
       arka planlar_3: -1268200769871177562
-      arka planlar_4: -211381429036768507
       arka planlar_5: -1574555770111247346
       arka planlar_6: -7038171855584677675
-      arka planlar_7: -1181184990
+      box c: 7648195282617278548
+      box o: -1181184990
       brokenwall: 1199251052
       brokenwall2: -1998438467
       brokenwall3: -479916431
@@ -559,6 +558,7 @@ TextureImporter:
       kutu b: -1161543065133461007
       kutu c: 4814016128415072438
       kutu o: -3712052338118174943
+      ladder: -211381429036768507
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 038c15d05d68a714bbb6fd12b6aebda1, type: 3}
   m_Name: Climb Config
   m_EditorClassIdentifier: 
-  climbSpeed: 4
+  climbSpeed: 6
   enterTolerance: 0.1
   exitThreshold: 0.15
