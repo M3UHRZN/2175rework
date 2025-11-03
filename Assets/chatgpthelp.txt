@@ -1,0 +1,920 @@
+harika — şimdi doğrudan **çalışır bir temel iskeleti** kodluyorum.
+hedef: sıfırdan boş projeye ekleyip **tek bir sprite** ile yürü/koş, zıpla (coyote+buffer+cut), one-way’den in, **duvar kayma + duvar zıplama**, **kenara tutunma + çıkış**, **merdiven tırmanma** ve **anim param/sinyal köprüsü** hazır olsun.
+
+> not: her dosya ayrı C# scripti. **Rigidbody2D’yi yalnız Motor yazar** kuralı korunuyor.
+> inspector’da layer/transform referanslarını işaretlemeyi unutma (aşağıda notlar var).
+
+---
+
+# ScriptableObject konfig (tuning)
+
+**MovementConfig.cs**
+
+```csharp
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Configs/MovementConfig")]
+public class MovementConfig : ScriptableObject
+{
+    [Header("Run / Air Control")]
+    public float maxRunSpeed = 6f;
+    [Tooltip("Seconds to reach target speed on ground")]
+    public float accelTime = 0.12f;
+    [Tooltip("Seconds to stop on ground")]
+    public float decelTime = 0.12f;
+    [Range(0f, 1f)] public float airControl = 0.5f;
+
+    [Header("Gravity")]
+    public float gravityScale = 3.5f;
+    [Tooltip("When wall sliding, clamp fall speed to this magnitude")]
+    public float wallSlideSpeed = 2.5f;
+}
+```
+
+**JumpConfig.cs**
+
+```csharp
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Configs/JumpConfig")]
+public class JumpConfig : ScriptableObject
+{
+    [Header("Heights (in Unity units)")]
+    public float shortJumpHeight = 1.2f;
+    public float fullJumpHeight  = 2.6f;
+
+    [Header("Timing")]
+    public float jumpHoldTime = 0.18f;   // variable jump window
+    public float coyoteMs     = 150f;    // after leaving ground
+    public float bufferMs     = 150f;    // before landing
+
+    [Header("Cut Jump")]
+    public bool ceilingCancel = true;
+    [Range(0.1f, 1f)] public float cutMultiplier = 0.5f;
+}
+```
+
+**WallConfig.cs**
+
+```csharp
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Configs/WallConfig")]
+public class WallConfig : ScriptableObject
+{
+    public float wallCheckDist = 0.2f;
+    [Tooltip("Extra friction while sliding on wall")]
+    public float wallFriction = 0.2f;
+    [Range(10f, 85f)] public float wallJumpAngle = 55f;
+    public float wallJumpImpulse = 10f;
+}
+```
+
+**LedgeConfig.cs**
+
+```csharp
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Configs/LedgeConfig")]
+public class LedgeConfig : ScriptableObject
+{
+    public Vector2 ledgeProbeOffset = new Vector2(0.2f, 0.8f);
+    public float ledgeSnapDistance = 0.15f;
+    public Vector2 climbUpShift = new Vector2(0.4f, 0.9f);
+    public float hangTimeoutMs = 0f; // 0 = unlimited
+}
+```
+
+**ClimbConfig.cs**
+
+```csharp
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Configs/ClimbConfig")]
+public class ClimbConfig : ScriptableObject
+{
+    public float climbSpeed = 4f;
+    public float enterTolerance = 0.1f;
+    public float exitThreshold  = 0.15f;
+}
+```
+
+---
+
+# Girdi & Sensörler
+
+**InputAdapter.cs**
+
+```csharp
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class InputAdapter : MonoBehaviour
+{
+    [Header("Input Actions")]
+    public InputActionReference move;     // Vector2
+    public InputActionReference jump;     // Button
+    public InputActionReference interact; // Button (ops)
+
+    public float MoveX { get; private set; }
+    public float MoveY { get; private set; }
+    public bool JumpPressed { get; private set; }
+    public bool JumpHeld    { get; private set; }
+    public bool DownHeld    { get; private set; }
+    public bool InteractPressed { get; private set; }
+
+    void OnEnable()
+    {
+        move?.action?.Enable();
+        jump?.action?.Enable();
+        interact?.action?.Enable();
+    }
+
+    void OnDisable()
+    {
+        move?.action?.Disable();
+        jump?.action?.Disable();
+        interact?.action?.Disable();
+    }
+
+    public void Collect() // called by Orchestrator.Update
+    {
+        var mv = move != null ? move.action.ReadValue<Vector2>() : Vector2.zero;
+        MoveX = Mathf.Clamp(mv.x, -1f, 1f);
+        MoveY = Mathf.Clamp(mv.y, -1f, 1f);
+        JumpHeld = jump != null && jump.action.IsPressed();
+        bool jumpWasPressed = jump != null && jump.action.WasPressedThisFrame();
+        JumpPressed = jumpWasPressed;
+
+        DownHeld = MoveY < -0.5f;
+        InteractPressed = interact != null && interact.action.WasPressedThisFrame();
+    }
+
+    public void ClearFrameEdges() // call end of Update
+    {
+        JumpPressed = false;
+        InteractPressed = false;
+    }
+}
+```
+
+**Sensors2D.cs**
+
+```csharp
+using UnityEngine;
+
+public class Sensors2D : MonoBehaviour
+{
+    [Header("Origins")]
+    public Transform feet;
+    public Transform head;
+    public Transform wallL;
+    public Transform wallR;
+    public Transform ledgeProbe;
+
+    [Header("Masks")]
+    public LayerMask groundMask;
+    public LayerMask oneWayMask;
+    public LayerMask ladderMask;
+
+    [Header("Sizes/Distances")]
+    public float feetRadius = 0.12f;
+    public float headRadius = 0.12f;
+    public float wallCheckDist = 0.15f;
+    public float ledgeDownRay = 0.4f;
+
+    [Header("Outputs")]
+    public bool isGrounded { get; private set; }
+    public bool justLanded { get; private set; }
+    public bool headBlocked { get; private set; }
+    public bool wallLeft { get; private set; }
+    public bool wallRight { get; private set; }
+    public bool ledgeDetected { get; private set; }
+    public bool onLadder { get; private set; }
+    public bool onOneWay { get; private set; }
+    public bool onMovingPlatform { get; private set; } // simple flag; extend if needed
+    public Vector2 platformVelocity { get; private set; }
+    public float slopeAngle { get; private set; }
+
+    bool prevGrounded;
+
+    public void Sample() // called by Orchestrator.Update
+    {
+        var pos = transform.position;
+
+        // Ground check
+        isGrounded = Physics2D.OverlapCircle(feet.position, feetRadius, groundMask | oneWayMask);
+        onOneWay = Physics2D.OverlapCircle(feet.position, feetRadius, oneWayMask);
+
+        justLanded = !prevGrounded && isGrounded;
+        prevGrounded = isGrounded;
+
+        // Head
+        headBlocked = Physics2D.OverlapCircle(head.position, headRadius, groundMask | oneWayMask);
+
+        // Walls
+        wallLeft  = Physics2D.Raycast(wallL.position, Vector2.left,  wallCheckDist, groundMask);
+        wallRight = Physics2D.Raycast(wallR.position, Vector2.right, wallCheckDist, groundMask);
+
+        // Ladder
+        onLadder = Physics2D.OverlapCircle(transform.position, 0.15f, ladderMask);
+
+        // Ledge detect: cast down from a probe slightly ahead
+        ledgeDetected = false;
+        if (!isGrounded)
+        {
+            Vector2 p = (Vector2)ledgeProbe.position;
+            var hit = Physics2D.Raycast(p, Vector2.down, ledgeDownRay, groundMask);
+            if (hit.collider != null)
+            {
+                // Ensure there is empty space at chest/head level (basic)
+                var free = !Physics2D.OverlapCircle(head.position, headRadius, groundMask);
+                if (free) ledgeDetected = true;
+            }
+        }
+
+        // Slope angle (optional): sample ground normal
+        slopeAngle = 0f;
+        var hit2 = Physics2D.Raycast(feet.position + Vector3.up * 0.02f, Vector2.down, 0.2f, groundMask);
+        if (hit2.collider != null) slopeAngle = Vector2.Angle(hit2.normal, Vector2.up);
+
+        // Platform carry (extend if you add moving platforms with custom component)
+        onMovingPlatform = false;
+        platformVelocity = Vector2.zero;
+    }
+}
+```
+
+---
+
+# State Machine (HFSM çekirdek)
+
+**PlayerStateMachine.cs**
+
+```csharp
+using UnityEngine;
+using System;
+
+public class PlayerStateMachine : MonoBehaviour
+{
+    public enum LocoState { Idle, Run, JumpRise, JumpFall, WallSlide, LedgeHang, Climb }
+    public enum PhaseState { None, WallJump, LedgeClimb, DropThrough }
+
+    public LocoState Current { get; private set; } = LocoState.Idle;
+    public PhaseState Phase { get; private set; } = PhaseState.None;
+
+    public event Action<LocoState, LocoState> OnLocoChanged;
+    public event Action<PhaseState> OnPhaseTriggered;
+
+    public void ForceSet(LocoState s)
+    {
+        if (s == Current) return;
+        var old = Current;
+        Current = s;
+        OnLocoChanged?.Invoke(old, s);
+    }
+
+    public bool RequestTransition(LocoState target, string reason = "")
+    {
+        if (target == Current) return false;
+        // (Optional) add guard rules here if you want to centralize
+        ForceSet(target);
+        return true;
+    }
+
+    public void TriggerPhase(PhaseState p)
+    {
+        Phase = p;
+        OnPhaseTriggered?.Invoke(p);
+        Phase = PhaseState.None;
+    }
+}
+```
+
+---
+
+# Fizik tek yazarı (Motor)
+
+**LocomotionMotor2D.cs**
+
+```csharp
+using UnityEngine;
+
+[RequireComponent(typeof(Rigidbody2D))]
+public class LocomotionMotor2D : MonoBehaviour
+{
+    public MovementConfig movement;
+    public JumpConfig jumpCfg;
+    public WallConfig wallCfg;
+    public LedgeConfig ledgeCfg;
+    public ClimbConfig climbCfg;
+
+    Rigidbody2D rb;
+    PlayerStateMachine fsm;
+    Sensors2D sensors;
+    InputAdapter input;
+
+    float desiredX;
+    float jumpHoldTimer;
+    bool wantCutJump;
+    bool wallSlideActive;
+    int wallDir; // -1 left, +1 right
+    bool hanging;
+    Vector2 hangPoint;
+    bool climbing;
+    float climbSpeed;
+
+    public float velocityX => rb.velocity.x;
+    public float velocityY => rb.velocity.y;
+    public int facingSign { get; private set; } = 1;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        fsm = GetComponent<PlayerStateMachine>();
+        sensors = GetComponent<Sensors2D>();
+        input = GetComponent<InputAdapter>();
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        rb.gravityScale = movement != null ? movement.gravityScale : 3f;
+    }
+
+    // ------- Requests (called by controllers) -------
+    public void RequestHorizontalIntent(float moveX)
+    {
+        desiredX = Mathf.Clamp(moveX, -1f, 1f);
+        if (Mathf.Abs(moveX) > 0.01f) facingSign = moveX > 0 ? 1 : -1;
+    }
+
+    public void RequestJump(float impulse, bool allowCut)
+    {
+        // set vertical velocity directly
+        var v = rb.velocity;
+        v.y = impulse;
+        rb.velocity = v;
+        jumpHoldTimer = jumpCfg != null ? jumpCfg.jumpHoldTime : 0.18f;
+        wantCutJump = allowCut;
+        fsm.TriggerPhase(PlayerStateMachine.PhaseState.None);
+    }
+
+    public void RequestWallSlide(int dir, float targetFallSpeed)
+    {
+        wallSlideActive = true;
+        wallDir = Mathf.Clamp(dir, -1, 1);
+        // clamp will be applied in physics step
+    }
+
+    public void RequestWallJump(Vector2 impulse)
+    {
+        var v = rb.velocity;
+        v.x = impulse.x;
+        v.y = impulse.y;
+        rb.velocity = v;
+        wallSlideActive = false;
+        fsm.TriggerPhase(PlayerStateMachine.PhaseState.WallJump);
+    }
+
+    public void RequestLedgeHang(Vector2 snapPoint)
+    {
+        hanging = true;
+        hangPoint = snapPoint;
+        rb.velocity = Vector2.zero;
+        rb.gravityScale = 0f;
+    }
+
+    public void RequestLedgeClimb(int dirSign)
+    {
+        if (!hanging) return;
+        // snap upwards and slightly forward
+        Vector2 shift = ledgeCfg != null ? ledgeCfg.climbUpShift : new Vector2(0.4f, 0.9f);
+        shift.x *= Mathf.Clamp(dirSign, -1, 1);
+        rb.position = rb.position + shift;
+        hanging = false;
+        rb.gravityScale = movement.gravityScale;
+        fsm.TriggerPhase(PlayerStateMachine.PhaseState.LedgeClimb);
+    }
+
+    public void RequestClimb(float vSpeed)
+    {
+        climbing = true;
+        climbSpeed = vSpeed;
+        rb.gravityScale = 0f;
+    }
+
+    public void RequestStopClimbRestoreGravity()
+    {
+        climbing = false;
+        rb.gravityScale = movement.gravityScale;
+    }
+
+    public void RequestGravityMode(bool enabled, float scale = 1f)
+    {
+        rb.gravityScale = enabled ? (movement.gravityScale * scale) : 0f;
+    }
+
+    // ------- Physics Step -------
+    public void PhysicsStep(float fixedDt)
+    {
+        // Ledge hang hard freeze at hang point
+        if (hanging)
+        {
+            rb.velocity = Vector2.zero;
+            rb.position = Vector2.Lerp(rb.position, hangPoint, 0.8f);
+            return;
+        }
+
+        // Climb: vertical velocity only, gravity off
+        if (climbing)
+        {
+            rb.velocity = new Vector2(0f, climbSpeed);
+            return;
+        }
+
+        // Horizontal movement
+        float target = desiredX * (movement != null ? movement.maxRunSpeed : 6f);
+        float accel = (movement != null ? 1f / Mathf.Max(0.01f, movement.accelTime) : 8f);
+        float decel = (movement != null ? 1f / Mathf.Max(0.01f, movement.decelTime) : 8f);
+
+        // Air control scaling
+        float control = sensors.isGrounded ? 1f : (movement != null ? movement.airControl : 0.5f);
+
+        float vx = rb.velocity.x;
+        float delta = target - vx;
+        float rate = (Mathf.Abs(target) > 0.01f ? accel : decel) * control;
+        vx += Mathf.Clamp(delta, -rate, rate) * fixedDt * 60f; // scale to 60Hz feel
+        float vy = rb.velocity.y;
+
+        // Variable jump hold (cut when timer ends or head blocked or button released)
+        if (jumpHoldTimer > 0f)
+        {
+            jumpHoldTimer -= Time.fixedDeltaTime;
+        }
+        else if (wantCutJump && rb.velocity.y > 0f)
+        {
+            rb.velocity = new Vector2(vx, rb.velocity.y * (jumpCfg != null ? jumpCfg.cutMultiplier : 0.5f));
+            wantCutJump = false;
+        }
+
+        if (sensors.headBlocked && rb.velocity.y > 0f && (jumpCfg != null && jumpCfg.ceilingCancel))
+        {
+            rb.velocity = new Vector2(vx, 0f);
+            wantCutJump = false;
+        }
+
+        // Wall slide clamp
+        if (wallSlideActive && !sensors.isGrounded)
+        {
+            float maxFall = movement != null ? -movement.wallSlideSpeed : -2.5f;
+            vy = Mathf.Max(vy, maxFall);
+        }
+
+        rb.velocity = new Vector2(vx, vy);
+
+        // Clear one-frame flags
+        wallSlideActive = false;
+    }
+}
+```
+
+---
+
+# Zıplama & Yetenek işçileri
+
+**JumpController.cs**
+
+```csharp
+using UnityEngine;
+
+public class JumpController : MonoBehaviour
+{
+    InputAdapter input;
+    Sensors2D sensors;
+    LocomotionMotor2D motor;
+    PlayerStateMachine fsm;
+    public JumpConfig jumpCfg;
+    public MovementConfig moveCfg;
+
+    float coyoteMsLeft;
+    float bufferMsLeft;
+
+    void Awake()
+    {
+        input = GetComponent<InputAdapter>();
+        sensors = GetComponent<Sensors2D>();
+        motor = GetComponent<LocomotionMotor2D>();
+        fsm = GetComponent<PlayerStateMachine>();
+    }
+
+    public void Tick(float dt)
+    {
+        // coyote
+        if (sensors.isGrounded) coyoteMsLeft = jumpCfg.coyoteMs;
+        else coyoteMsLeft = Mathf.Max(0f, coyoteMsLeft - dt * 1000f);
+
+        // buffer
+        if (input.JumpPressed) bufferMsLeft = jumpCfg.bufferMs;
+        else bufferMsLeft = Mathf.Max(0f, bufferMsLeft - dt * 1000f);
+
+        // drop-through one-way
+        if (input.DownHeld && input.JumpPressed && sensors.onOneWay)
+        {
+            fsm.TriggerPhase(PlayerStateMachine.PhaseState.DropThrough);
+            // NOTE: actual drop-through via PlatformEffector2D setup (no code toggle needed)
+            return;
+        }
+
+        bool canJump = sensors.isGrounded || coyoteMsLeft > 0f;
+
+        if (bufferMsLeft > 0f && canJump)
+        {
+            float g = Physics2D.gravity.y * (moveCfg != null ? moveCfg.gravityScale : 3.5f);
+            // v = sqrt(2 * g * h); g is negative
+            float vShort = Mathf.Sqrt(Mathf.Abs(2f * g * jumpCfg.shortJumpHeight));
+            float vFull  = Mathf.Sqrt(Mathf.Abs(2f * g * jumpCfg.fullJumpHeight));
+            float v = input.JumpHeld ? vFull : vShort;
+
+            motor.RequestJump(v, allowCut: true);
+            bufferMsLeft = 0f;
+            coyoteMsLeft = 0f;
+            fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "Jump");
+        }
+    }
+}
+```
+
+**WallMovement.cs**
+
+```csharp
+using UnityEngine;
+
+public class WallMovement : MonoBehaviour
+{
+    public WallConfig wallCfg;
+    InputAdapter input;
+    Sensors2D sensors;
+    LocomotionMotor2D motor;
+    PlayerStateMachine fsm;
+
+    void Awake()
+    {
+        input = GetComponent<InputAdapter>();
+        sensors = GetComponent<Sensors2D>();
+        motor = GetComponent<LocomotionMotor2D>();
+        fsm = GetComponent<PlayerStateMachine>();
+    }
+
+    public void Tick(float dt)
+    {
+        if (sensors.isGrounded) return;
+
+        int dir = 0;
+        if (sensors.wallLeft && input.MoveX < -0.1f) dir = -1;
+        else if (sensors.wallRight && input.MoveX > 0.1f) dir = +1;
+
+        if (dir != 0)
+        {
+            // enter wall slide
+            motor.RequestWallSlide(dir, -(motor != null && motor != null ? (motor != null ? 1f : 1f) : 1f));
+            fsm.RequestTransition(PlayerStateMachine.LocoState.WallSlide, "WallSlide");
+
+            // wall jump
+            if (input.JumpPressed)
+            {
+                float angleRad = Mathf.Deg2Rad * wallCfg.wallJumpAngle;
+                Vector2 outDir = new Vector2(-dir * Mathf.Cos(angleRad), Mathf.Sin(angleRad)).normalized;
+                Vector2 impulse = outDir * wallCfg.wallJumpImpulse;
+                motor.RequestWallJump(impulse);
+                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "WallJump");
+            }
+        }
+    }
+}
+```
+
+**LedgeHangController.cs**
+
+```csharp
+using UnityEngine;
+
+public class LedgeHangController : MonoBehaviour
+{
+    public LedgeConfig ledgeCfg;
+    InputAdapter input;
+    Sensors2D sensors;
+    LocomotionMotor2D motor;
+    PlayerStateMachine fsm;
+
+    void Awake()
+    {
+        input = GetComponent<InputAdapter>();
+        sensors = GetComponent<Sensors2D>();
+        motor = GetComponent<LocomotionMotor2D>();
+        fsm = GetComponent<PlayerStateMachine>();
+    }
+
+    public void Tick(float dt)
+    {
+        if (sensors.isGrounded) return;
+
+        // Try grab ledge if detected
+        if (sensors.ledgeDetected && fsm.Current != PlayerStateMachine.LocoState.LedgeHang)
+        {
+            // snap point: from ledgeProbe slightly back towards body, then down a bit
+            Vector2 snap = (Vector2)transform.position + ledgeCfg.ledgeProbeOffset;
+            snap.y += -0.05f;
+            motor.RequestLedgeHang(snap);
+            fsm.RequestTransition(PlayerStateMachine.LocoState.LedgeHang, "LedgeHang");
+            return;
+        }
+
+        if (fsm.Current == PlayerStateMachine.LocoState.LedgeHang)
+        {
+            int dir = input.MoveX > 0.2f ? 1 : (input.MoveX < -0.2f ? -1 : 0);
+            if (dir != 0 || input.MoveY > 0.2f)
+            {
+                motor.RequestLedgeClimb(dir == 0 ? 1 : dir);
+                fsm.RequestTransition(PlayerStateMachine.LocoState.Idle, "LedgeClimb");
+            }
+            else if (input.DownHeld)
+            {
+                // drop
+                motor.RequestGravityMode(true, 1f);
+                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpFall, "LedgeDrop");
+            }
+        }
+    }
+}
+```
+
+**ClimbController.cs**
+
+```csharp
+using UnityEngine;
+
+public class ClimbController : MonoBehaviour
+{
+    public ClimbConfig climbCfg;
+    InputAdapter input;
+    Sensors2D sensors;
+    LocomotionMotor2D motor;
+    PlayerStateMachine fsm;
+
+    void Awake()
+    {
+        input = GetComponent<InputAdapter>();
+        sensors = GetComponent<Sensors2D>();
+        motor = GetComponent<LocomotionMotor2D>();
+        fsm = GetComponent<PlayerStateMachine>();
+    }
+
+    public void Tick(float dt)
+    {
+        if (sensors.onLadder)
+        {
+            if (Mathf.Abs(input.MoveY) > 0.1f)
+            {
+                motor.RequestClimb(input.MoveY * climbCfg.climbSpeed);
+                fsm.RequestTransition(PlayerStateMachine.LocoState.Climb, "Climb");
+            }
+
+            if (input.JumpPressed)
+            {
+                motor.RequestStopClimbRestoreGravity();
+                fsm.RequestTransition(PlayerStateMachine.LocoState.JumpRise, "ClimbJump");
+            }
+        }
+        else if (fsm.Current == PlayerStateMachine.LocoState.Climb)
+        {
+            motor.RequestStopClimbRestoreGravity();
+            // decide grounded/airborne
+            fsm.RequestTransition(sensors.isGrounded ? PlayerStateMachine.LocoState.Idle
+                                                     : PlayerStateMachine.LocoState.JumpFall, "ExitClimb");
+        }
+    }
+}
+```
+
+**AbilityController.cs**
+
+```csharp
+using UnityEngine;
+
+public class AbilityController : MonoBehaviour
+{
+    InputAdapter input;
+    Sensors2D sensors;
+    LocomotionMotor2D motor;
+    PlayerStateMachine fsm;
+    MovementConfig moveCfg;
+
+    JumpController jump;
+    WallMovement wall;
+    LedgeHangController ledge;
+    ClimbController climb;
+
+    void Awake()
+    {
+        input = GetComponent<InputAdapter>();
+        sensors = GetComponent<Sensors2D>();
+        motor = GetComponent<LocomotionMotor2D>();
+        fsm = GetComponent<PlayerStateMachine>();
+        moveCfg = GetComponent<LocomotionMotor2D>()?.movement;
+
+        jump  = GetComponent<JumpController>();
+        wall  = GetComponent<WallMovement>();
+        ledge = GetComponent<LedgeHangController>();
+        climb = GetComponent<ClimbController>();
+    }
+
+    public void Tick(float dt)
+    {
+        // Base locomotion intent
+        motor.RequestHorizontalIntent(input.MoveX);
+
+        // Priority: Ledge > Wall > Ladder > Jump/basics
+        ledge?.Tick(dt);
+        wall?.Tick(dt);
+        climb?.Tick(dt);
+        jump?.Tick(dt);
+
+        // High-level state resolution (simple defaults)
+        if (fsm.Current != PlayerStateMachine.LocoState.LedgeHang &&
+            fsm.Current != PlayerStateMachine.LocoState.WallSlide &&
+            fsm.Current != PlayerStateMachine.LocoState.Climb)
+        {
+            if (sensors.isGrounded)
+                fsm.RequestTransition(Mathf.Abs(input.MoveX) > 0.05f ?
+                    PlayerStateMachine.LocoState.Run : PlayerStateMachine.LocoState.Idle, "Grounded");
+            else
+                fsm.RequestTransition(motor.velocityY > 0f ?
+                    PlayerStateMachine.LocoState.JumpRise : PlayerStateMachine.LocoState.JumpFall, "Airborne");
+        }
+    }
+}
+```
+
+---
+
+# Sunum & Debug
+
+**AnimationFacade.cs**
+
+```csharp
+using UnityEngine;
+
+public class AnimationFacade : MonoBehaviour
+{
+    public Animator animator;
+
+    public void SetBool(string name, bool value) => animator?.SetBool(name, value);
+    public void SetFloat(string name, float value) => animator?.SetFloat(name, value);
+    public void SetInt(string name, int value) => animator?.SetInteger(name, value);
+    public void Trigger(string name) { if (animator != null) animator.SetTrigger(name); }
+}
+```
+
+**AnimationStateSync.cs**
+
+```csharp
+using UnityEngine;
+
+public class AnimationStateSync : MonoBehaviour
+{
+    public AnimationFacade anim;
+    PlayerStateMachine fsm;
+    Sensors2D sensors;
+    LocomotionMotor2D motor;
+
+    void Awake()
+    {
+        fsm = GetComponent<PlayerStateMachine>();
+        sensors = GetComponent<Sensors2D>();
+        motor = GetComponent<LocomotionMotor2D>();
+        if (anim == null) anim = GetComponent<AnimationFacade>();
+
+        if (fsm != null)
+        {
+            fsm.OnLocoChanged += (oldS, newS) =>
+            {
+                if (newS == PlayerStateMachine.LocoState.JumpRise) anim?.Trigger("Jump");
+                if (newS == PlayerStateMachine.LocoState.Idle && sensors.justLanded) anim?.Trigger("Land");
+            };
+            fsm.OnPhaseTriggered += (p) =>
+            {
+                if (p == PlayerStateMachine.PhaseState.WallJump) anim?.Trigger("WallJump");
+                if (p == PlayerStateMachine.PhaseState.LedgeClimb) anim?.Trigger("LedgeClimb");
+            };
+        }
+    }
+
+    public void LateSync()
+    {
+        if (anim == null) return;
+        anim.SetBool("Grounded", sensors.isGrounded);
+        anim.SetBool("WallSliding", fsm.Current == PlayerStateMachine.LocoState.WallSlide);
+        anim.SetBool("LedgeHanging", fsm.Current == PlayerStateMachine.LocoState.LedgeHang);
+        anim.SetBool("Climbing", fsm.Current == PlayerStateMachine.LocoState.Climb);
+        anim.SetFloat("SpeedX", Mathf.Abs(motor.velocityX));
+        anim.SetFloat("SpeedY", motor.velocityY);
+        anim.SetInt("LocoState", (int)fsm.Current);
+    }
+}
+```
+
+**DebugOverlay.cs**
+
+```csharp
+using UnityEngine;
+
+public class DebugOverlay : MonoBehaviour
+{
+    PlayerStateMachine fsm;
+    Sensors2D s;
+    LocomotionMotor2D m;
+    JumpController j;
+
+    void Awake()
+    {
+        fsm = GetComponent<PlayerStateMachine>();
+        s = GetComponent<Sensors2D>();
+        m = GetComponent<LocomotionMotor2D>();
+        j = GetComponent<JumpController>();
+    }
+
+    void OnGUI()
+    {
+        GUI.Label(new Rect(10, 10, 400, 20), $"State: {fsm.Current}");
+        GUI.Label(new Rect(10, 30, 400, 20), $"Grounded:{s.isGrounded} just:{s.justLanded} head:{s.headBlocked}");
+        GUI.Label(new Rect(10, 50, 400, 20), $"Wall L/R:{s.wallLeft}/{s.wallRight} Ledge:{s.ledgeDetected} Ladder:{s.onLadder}");
+        GUI.Label(new Rect(10, 70, 400, 20), $"Vel X/Y:{m.velocityX:0.00}/{m.velocityY:0.00}");
+    }
+}
+```
+
+---
+
+# Orkestrasyon (Update sırası tek yerden)
+
+**PlayerOrchestrator.cs**
+
+```csharp
+using UnityEngine;
+
+public class PlayerOrchestrator : MonoBehaviour
+{
+    InputAdapter input;
+    Sensors2D sensors;
+    AbilityController abilities;
+    LocomotionMotor2D motor;
+    AnimationStateSync animSync;
+
+    void Awake()
+    {
+        input    = GetComponent<InputAdapter>();
+        sensors  = GetComponent<Sensors2D>();
+        abilities= GetComponent<AbilityController>();
+        motor    = GetComponent<LocomotionMotor2D>();
+        animSync = GetComponent<AnimationStateSync>();
+    }
+
+    void Update()
+    {
+        input?.Collect();
+        sensors?.Sample();
+        abilities?.Tick(Time.deltaTime);
+        input?.ClearFrameEdges();
+    }
+
+    void FixedUpdate()
+    {
+        motor?.PhysicsStep(Time.fixedDeltaTime);
+    }
+
+    void LateUpdate()
+    {
+        animSync?.LateSync();
+    }
+}
+```
+
+---
+
+## Kurulum notları (Inspector)
+
+* **Player (küp)**: `Rigidbody2D (Dynamic, Interpolate)`, `BoxCollider2D` veya `CapsuleCollider2D`.
+* **Child empties**: `Feet`, `Head`, `WallL`, `WallR`, `LedgeProbe` (tamamını `Sensors2D`’ye bağla).
+* **Layers**: `Ground`, `OneWay`, `Ladder` oluştur; `Sensors2D` mask’larına ata.
+* **Configs**: Project panelde 5 adet SO oluştur (`MovementConfig`, `JumpConfig`, `WallConfig`, `LedgeConfig`, `ClimbConfig`) ve `LocomotionMotor2D` ile ilgili kontrolcülere bağla.
+* **Input**: Yeni Input System’de `move(Vector2)`, `jump(Button)`, `interact(Button)` oluştur; `InputAdapter`’da referanslarını ata.
+* **OneWay**: `BoxCollider2D + PlatformEffector2D(Use One Way = 180°)`, Layer=`OneWay`.
+* **Ladder**: `BoxCollider2D (isTrigger)`, Layer=`Ladder`.
+* **Walls/Ledge**: Layer=`Ground` dikey yüzey + üstte köşe olsun.
+
+---
+
+## Ne hazır çalışır?
+
+* **Yürü/Koş** (hava kontrolü dahil), **Zıplama** (coyote+buffer+cut), **OneWay’den inme**,
+* **Duvar kayma + duvar zıplama**, **Kenar tutunma + yukarı çıkış**, **Merdiven tırmanma**,
+* **Animator param/trigger köprüsü** (Animator bağlarsan).
+
+İstersen sıradaki adım olarak **Animator param isimlerini** ve basit bir Animator Controller şemasını ekleyebilirim; ya da etkileşim/kapı örneği.
