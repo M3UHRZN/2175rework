@@ -61,5 +61,8 @@ TagManager:
   - name: player
     uniqueID: 5765009
     locked: 0
+  - name: camside
+    uniqueID: 2729692487
+    locked: 0
   m_RenderingLayers:
   - Default

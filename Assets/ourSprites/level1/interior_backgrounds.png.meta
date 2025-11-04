@@ -1,34 +1,37 @@
 fileFormatVersion: 2
-guid: 8af0a5e484bebef45be20c8a28fb31ff
+guid: 695efe5257767c047aa03761619dba3a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 112053323466822632
-    second: Runruneliorrun_0
+      213: 8757656725051329664
+    second: interior_backgrounds_0
   - first:
-      213: -2916709846172606261
-    second: Runruneliorrun_1
+      213: 377851147979637050
+    second: interior_backgrounds_1
   - first:
-      213: -5916370969113249493
-    second: Runruneliorrun_2
+      213: -6616907587321935280
+    second: interior_backgrounds_2
   - first:
-      213: 2422599550045593096
-    second: Runruneliorrun_3
+      213: 4159997949451810157
+    second: interior_backgrounds_3
   - first:
-      213: 5399781012525827638
-    second: Runruneliorrun_4
+      213: 6602263057334476881
+    second: interior_backgrounds_4
   - first:
-      213: 6003184196895430946
-    second: Runruneliorrun_5
+      213: -4402599456007732607
+    second: interior_backgrounds_5
   - first:
-      213: -1005969947613741261
-    second: Runruneliorrun_6
+      213: 4412482803595042714
+    second: interior_backgrounds_6
   - first:
-      213: 4320604293013572298
-    second: Runruneliorrun_7
+      213: 1336386319746616342
+    second: interior_backgrounds_7
   - first:
-      213: -4852944094244096718
-    second: Runruneliorrun_8
+      213: -2302848799050232272
+    second: interior_backgrounds_8
+  - first:
+      213: -7699624330317478757
+    second: interior_backgrounds_9
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,7 +99,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -124,199 +127,221 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Runruneliorrun_0
+      name: interior_backgrounds_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 320
-        width: 320
-        height: 320
+        y: 8
+        width: 354
+        height: 172
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8e3542d67e71e8100800000000000000
-      internalID: 112053323466822632
+      spriteID: 08cce713462798970800000000000000
+      internalID: 8757656725051329664
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Runruneliorrun_1
+      name: interior_backgrounds_1
       rect:
         serializedVersion: 2
-        x: 320
-        y: 320
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bc06ff929d3c587d0800000000000000
-      internalID: -2916709846172606261
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Runruneliorrun_2
-      rect:
-        serializedVersion: 2
-        x: 634
-        y: 305
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b29329a23f3d4eda0800000000000000
-      internalID: -5916370969113249493
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Runruneliorrun_3
-      rect:
-        serializedVersion: 2
-        x: 960
-        y: 320
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 80e1d7d847dce9120800000000000000
-      internalID: 2422599550045593096
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Runruneliorrun_4
-      rect:
-        serializedVersion: 2
-        x: 1280
-        y: 320
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 636408cb830efea40800000000000000
-      internalID: 5399781012525827638
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Runruneliorrun_5
-      rect:
-        serializedVersion: 2
-        x: 1600
-        y: 320
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 229d03988389f4350800000000000000
-      internalID: 6003184196895430946
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Runruneliorrun_6
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 320
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 33fb3c999a31a02f0800000000000000
-      internalID: -1005969947613741261
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Runruneliorrun_7
-      rect:
-        serializedVersion: 2
-        x: 2240
-        y: 320
-        width: 320
-        height: 320
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: aca0a1486bed5fb30800000000000000
-      internalID: 4320604293013572298
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Runruneliorrun_8
-      rect:
-        serializedVersion: 2
-        x: 0
+        x: 372
         y: 0
-        width: 320
-        height: 320
+        width: 472
+        height: 180
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 23530cbee01e6acb0800000000000000
-      internalID: -4852944094244096718
+      spriteID: a31cc4dfd956e3500800000000000000
+      internalID: 377851147979637050
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: interior_backgrounds_2
+      rect:
+        serializedVersion: 2
+        x: 842
+        y: 62
+        width: 47
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05ac6127b950c24a0800000000000000
+      internalID: -6616907587321935280
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: interior_backgrounds_3
+      rect:
+        serializedVersion: 2
+        x: 930
+        y: 55
+        width: 373
+        height: 125
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d65bd6b28184bb930800000000000000
+      internalID: 4159997949451810157
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: interior_backgrounds_4
+      rect:
+        serializedVersion: 2
+        x: 1301
+        y: 0
+        width: 617
+        height: 180
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1502b163543ff9b50800000000000000
+      internalID: 6602263057334476881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: interior_backgrounds_5
+      rect:
+        serializedVersion: 2
+        x: 2071
+        y: 88
+        width: 37
+        height: 92
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 182c458ee13d6e2c0800000000000000
+      internalID: -4402599456007732607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: interior_backgrounds_6
+      rect:
+        serializedVersion: 2
+        x: 2106
+        y: 8
+        width: 51
+        height: 172
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9f5dc54bb94c3d30800000000000000
+      internalID: 4412482803595042714
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: interior_backgrounds_7
+      rect:
+        serializedVersion: 2
+        x: 2317
+        y: 0
+        width: 337
+        height: 180
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61c403ff64ccb8210800000000000000
+      internalID: 1336386319746616342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: interior_backgrounds_8
+      rect:
+        serializedVersion: 2
+        x: 1861
+        y: 0
+        width: 217
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03e0d21e733aa00e0800000000000000
+      internalID: -2302848799050232272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: interior_backgrounds_9
+      rect:
+        serializedVersion: 2
+        x: 2089
+        y: 0
+        width: 19
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b94c8774770752590800000000000000
+      internalID: -7699624330317478757
       vertices: []
       indices: 
       edges: []
@@ -325,7 +350,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: e41435dd188ce6c4387a201a33eb08a1
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -335,15 +360,16 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Runruneliorrun_0: 112053323466822632
-      Runruneliorrun_1: -2916709846172606261
-      Runruneliorrun_2: -5916370969113249493
-      Runruneliorrun_3: 2422599550045593096
-      Runruneliorrun_4: 5399781012525827638
-      Runruneliorrun_5: 6003184196895430946
-      Runruneliorrun_6: -1005969947613741261
-      Runruneliorrun_7: 4320604293013572298
-      Runruneliorrun_8: -4852944094244096718
+      interior_backgrounds_0: 8757656725051329664
+      interior_backgrounds_1: 377851147979637050
+      interior_backgrounds_2: -6616907587321935280
+      interior_backgrounds_3: 4159997949451810157
+      interior_backgrounds_4: 6602263057334476881
+      interior_backgrounds_5: -4402599456007732607
+      interior_backgrounds_6: 4412482803595042714
+      interior_backgrounds_7: 1336386319746616342
+      interior_backgrounds_8: -2302848799050232272
+      interior_backgrounds_9: -7699624330317478757
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
