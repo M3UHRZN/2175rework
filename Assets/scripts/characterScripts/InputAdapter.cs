@@ -61,7 +61,20 @@ public class InputAdapter : MonoBehaviour
         }
 
         Vector2 mv = move ? move.action.ReadValue<Vector2>() : Vector2.zero;
-        MoveX = Mathf.Clamp(mv.x, -1f, 1f);
+        
+        // Unity Input System çapraz hareket yaparken vektörü normalize ediyor
+        // (A+W basıldığında X 0.707 oluyor, bu da hızı azaltıyor)
+        // Çözüm: X input varsa, X'i ±1'e normalize et
+        if (Mathf.Abs(mv.x) > 0.01f)
+        {
+            // X input varsa, X'i sign'a göre -1 veya +1 yap (hızı koru)
+            MoveX = Mathf.Sign(mv.x);
+        }
+        else
+        {
+            MoveX = 0f;
+        }
+        
         MoveY = Mathf.Clamp(mv.y, -1f, 1f);
         JumpHeld = jump && jump.action.IsPressed();
         JumpPressed = jump && jump.action.WasPressedThisFrame();
