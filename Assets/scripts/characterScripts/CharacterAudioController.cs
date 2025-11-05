@@ -39,12 +39,18 @@ public class CharacterAudioController : MonoBehaviour
     [SerializeField] private AudioSource jumpSource;
     [SerializeField] private AudioClip jumpClip;
     [SerializeField] private float jumpMinInterval = 0.1f;
+    [Tooltip("Minimum seconds to keep the jump clip playing before retriggering.")]
+    [SerializeField] private float jumpMinDuration = 0.1f;
     [SerializeField] private AudioSource landSource;
     [SerializeField] private AudioClip landClip;
     [SerializeField] private float landMinInterval = 0.1f;
+    [Tooltip("Minimum seconds to keep the landing clip playing before retriggering.")]
+    [SerializeField] private float landMinDuration = 0.1f;
     [SerializeField] private AudioSource wallJumpSource;
     [SerializeField] private AudioClip wallJumpClip;
     [SerializeField] private float wallJumpMinInterval = 0.1f;
+    [Tooltip("Minimum seconds to keep the wall jump clip playing before retriggering.")]
+    [SerializeField] private float wallJumpMinDuration = 0.1f;
 
     private readonly List<AudioSource> registeredSources = new();
     private readonly Dictionary<AudioSource, LoopRuntimeState> loopStates = new();
@@ -152,13 +158,13 @@ public class CharacterAudioController : MonoBehaviour
                 StartLoop(wallSlideLoopSource, wallSlideLoopClip, wallSlideLoopMinDuration);
                 break;
             case PlayerStateMachine.LocoState.JumpRise:
-                TryPlayClip(jumpSource, jumpClip, ref lastJumpTime, jumpMinInterval);
+                TryPlayClip(jumpSource, jumpClip, ref lastJumpTime, jumpMinInterval, jumpMinDuration);
                 break;
         }
 
         if (IsLandingTransition(previous, current))
         {
-            TryPlayClip(landSource, landClip, ref lastLandTime, landMinInterval);
+            TryPlayClip(landSource, landClip, ref lastLandTime, landMinInterval, landMinDuration);
         }
     }
 
@@ -166,7 +172,7 @@ public class CharacterAudioController : MonoBehaviour
     {
         if (phase == PlayerStateMachine.PhaseState.WallJump)
         {
-            TryPlayClip(wallJumpSource, wallJumpClip, ref lastWallJumpTime, wallJumpMinInterval);
+            TryPlayClip(wallJumpSource, wallJumpClip, ref lastWallJumpTime, wallJumpMinInterval, wallJumpMinDuration);
         }
     }
 
@@ -196,14 +202,16 @@ public class CharacterAudioController : MonoBehaviour
         }
     }
 
-    private bool TryPlayClip(AudioSource source, AudioClip clip, ref float lastTime, float minInterval)
+    private bool TryPlayClip(AudioSource source, AudioClip clip, ref float lastTime, float minInterval, float minDuration = 0f)
     {
         if (source == null)
         {
             return false;
         }
 
-        if (Time.time < lastTime + minInterval)
+        float requiredDelay = Mathf.Max(0f, Mathf.Max(minInterval, minDuration));
+
+        if (Time.time < lastTime + requiredDelay)
         {
             return false;
         }
