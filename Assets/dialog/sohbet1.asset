@@ -16,11 +16,15 @@ MonoBehaviour:
   - speakerId: elior
     speakerDisplayName: elior
     text: "dsfadsfasdfsfsahdf\u0131osadhfos\u0131dhf\u0131oash\u0131oasdhf\u0131"
-    movementLock: 0
-  - speakerId: elior
-    speakerDisplayName: elior
+    movementLock: 2
+    autoAdvanceDelay: 0
+    lineClip: {fileID: 8300000, guid: 0d7b0b79515b80246b58580ebb6e78dc, type: 3}
+  - speakerId: sim
+    speakerDisplayName: 
     text: 21332914u2309472390472390742390472390472309472
-    movementLock: 0
+    movementLock: 2
+    autoAdvanceDelay: 3
+    lineClip: {fileID: 8300000, guid: 892b94394083d2042b39fd8e957fa58c, type: 3}
   onSequenceFinished:
     m_PersistentCalls:
       m_Calls: []
