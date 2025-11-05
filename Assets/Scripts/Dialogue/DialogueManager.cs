@@ -17,9 +17,17 @@ public class DialogueManager : MonoBehaviour
     [Tooltip("Konuşma satırlarını gösterecek UI bileşeni.")]
     public DialogueUI dialogueUI;
 
+    [Tooltip("Diyalog metninin saniyedeki karakter cinsinden yazılma hızı. 0 veya daha küçük değerler anında gösterir.")]
+    [Min(0f)]
+    public float charactersPerSecond = 30f;
+
     [Header("Input")]
     [Tooltip("Konuşmayı ilerletmek için kullanılacak InputAction (ör: Space tuşu).")]
     public InputActionReference advanceAction;
+
+    [Header("Audio")]
+    [Tooltip("Diyalog başladığında çalınacak sesleri oynatmak için kullanılacak AudioSource.")]
+    public AudioSource audioSource;
 
     [Tooltip("Yeni bir diyalog başladığında tetiklenecek olay.")]
     public UnityEvent<DialogueSequence> onDialogueStarted;
@@ -31,10 +39,13 @@ public class DialogueManager : MonoBehaviour
     public UnityEvent<DialogueSequence> onDialogueFinished;
 
     DialogueSequence currentSequence;
+    DialogueSequence.DialogueLine currentLine;
     int currentIndex = -1;
     DialogueCharacterBinding lockedBinding;
     bool allLocked;
     Coroutine autoAdvanceRoutine;
+    int pendingAutoAdvanceIndex = -1;
+    bool waitingForTyping;
 
     void Awake()
     {
@@ -55,6 +66,9 @@ public class DialogueManager : MonoBehaviour
             advanceAction.action.performed += OnAdvanceAction;
             advanceAction.action.Enable();
         }
+
+        if (dialogueUI != null)
+            dialogueUI.TypingCompleted += OnTypingCompleted;
     }
 
     void OnDisable()
@@ -64,6 +78,9 @@ public class DialogueManager : MonoBehaviour
             advanceAction.action.performed -= OnAdvanceAction;
             advanceAction.action.Disable();
         }
+
+        if (dialogueUI != null)
+            dialogueUI.TypingCompleted -= OnTypingCompleted;
     }
 
     void OnDestroy()
@@ -92,7 +109,11 @@ public class DialogueManager : MonoBehaviour
         }
 
         currentSequence = sequence;
+        currentLine = null;
         currentIndex = -1;
+        waitingForTyping = false;
+        pendingAutoAdvanceIndex = -1;
+        PlayStartAudio(sequence);
         onDialogueStarted?.Invoke(sequence);
         ShowNextLine();
         return true;
@@ -104,6 +125,12 @@ public class DialogueManager : MonoBehaviour
     {
         if (currentSequence == null)
             return;
+
+        if (dialogueUI != null && dialogueUI.IsTyping)
+        {
+            dialogueUI.CompleteTyping();
+            return;
+        }
 
         ShowNextLine();
     }
@@ -127,10 +154,14 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
+        currentLine = line;
+        pendingAutoAdvanceIndex = currentIndex;
         LockMovement(line);
-        dialogueUI?.ShowLine(line.speakerDisplayName, line.speakerId, line.text);
+        dialogueUI?.ShowLine(line.speakerDisplayName, line.speakerId, line.text, charactersPerSecond);
         onLineChanged?.Invoke(line);
-        ScheduleAutoAdvance(line, currentIndex);
+        waitingForTyping = dialogueUI != null && dialogueUI.IsTyping;
+        if (!waitingForTyping)
+            ScheduleAutoAdvance(line, currentIndex);
     }
 
     void LockMovement(DialogueSequence.DialogueLine line)
@@ -184,6 +215,7 @@ public class DialogueManager : MonoBehaviour
         dialogueUI?.Hide();
         currentSequence = null;
         currentIndex = -1;
+        currentLine = null;
         if (finishedSequence != null)
         {
             finishedSequence.onSequenceFinished?.Invoke();
@@ -204,7 +236,10 @@ public class DialogueManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
 
         if (currentSequence == null || currentIndex != lineIndex)
+        {
+            autoAdvanceRoutine = null;
             yield break;
+        }
 
         autoAdvanceRoutine = null;
         Advance();
@@ -217,6 +252,33 @@ public class DialogueManager : MonoBehaviour
             StopCoroutine(autoAdvanceRoutine);
             autoAdvanceRoutine = null;
         }
+
+        waitingForTyping = false;
+        pendingAutoAdvanceIndex = -1;
+    }
+
+    void OnTypingCompleted()
+    {
+        if (!waitingForTyping)
+            return;
+
+        waitingForTyping = false;
+
+        if (currentSequence == null)
+            return;
+
+        if (currentIndex != pendingAutoAdvanceIndex)
+            return;
+
+        ScheduleAutoAdvance(currentLine, currentIndex);
+    }
+
+    void PlayStartAudio(DialogueSequence sequence)
+    {
+        if (audioSource == null || sequence == null || sequence.startClip == null)
+            return;
+
+        audioSource.PlayOneShot(sequence.startClip);
     }
 
     public DialogueCharacterBinding GetBinding(string characterId)

@@ -11,6 +11,9 @@ public class DialogueSequence : ScriptableObject
     [Tooltip("Konuşma tamamlandığında başka bir davranış tetiklemek için.")]
     public UnityEngine.Events.UnityEvent onSequenceFinished;
 
+    [Tooltip("Diyalog başladığında çalınacak ses.")]
+    public AudioClip startClip;
+
     [Serializable]
     public class DialogueLine
     {
