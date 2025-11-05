@@ -58,6 +58,8 @@ public class CharacterAudioController : MonoBehaviour
     private float lastJumpTime = float.NegativeInfinity;
     private float lastLandTime = float.NegativeInfinity;
     private float lastWallJumpTime = float.NegativeInfinity;
+    private PlayerStateMachine.LocoState lastObservedLoco = PlayerStateMachine.LocoState.Idle;
+    private bool hasObservedInitialState;
 
     private struct LoopRuntimeState
     {
@@ -89,8 +91,9 @@ public class CharacterAudioController : MonoBehaviour
 
         if (stateMachine != null)
         {
-            stateMachine.OnLocoChanged += HandleLocoChanged;
             stateMachine.OnPhaseTriggered += HandlePhaseTriggered;
+            lastObservedLoco = stateMachine.Current;
+            hasObservedInitialState = true;
         }
 
         RegisterSources();
@@ -106,7 +109,6 @@ public class CharacterAudioController : MonoBehaviour
 
         if (stateMachine != null)
         {
-            stateMachine.OnLocoChanged -= HandleLocoChanged;
             stateMachine.OnPhaseTriggered -= HandlePhaseTriggered;
         }
 
@@ -118,6 +120,7 @@ public class CharacterAudioController : MonoBehaviour
 
         loopStates.Clear();
         loopStateKeys.Clear();
+        hasObservedInitialState = false;
     }
 
     private void Update()
@@ -127,8 +130,35 @@ public class CharacterAudioController : MonoBehaviour
             return;
         }
 
+        MonitorLocomotionChanges();
         UpdateFootsteps();
+        UpdateLoopActivity();
         UpdatePendingLoopStops();
+    }
+
+    private void MonitorLocomotionChanges()
+    {
+        if (stateMachine == null)
+        {
+            return;
+        }
+
+        var current = stateMachine.Current;
+
+        if (!hasObservedInitialState)
+        {
+            lastObservedLoco = current;
+            hasObservedInitialState = true;
+            return;
+        }
+
+        if (current == lastObservedLoco)
+        {
+            return;
+        }
+
+        HandleLocoChanged(lastObservedLoco, current);
+        lastObservedLoco = current;
     }
 
     private void HandleLocoChanged(PlayerStateMachine.LocoState previous, PlayerStateMachine.LocoState current)
@@ -165,6 +195,30 @@ public class CharacterAudioController : MonoBehaviour
         if (IsLandingTransition(previous, current))
         {
             TryPlayClip(landSource, landClip, ref lastLandTime, landMinInterval, landMinDuration);
+        }
+    }
+
+    private void UpdateLoopActivity()
+    {
+        if (stateMachine == null)
+        {
+            return;
+        }
+
+        MaintainLoop(stateMachine.Current == PlayerStateMachine.LocoState.Climb, climbLoopSource, climbLoopClip, climbLoopMinDuration);
+        MaintainLoop(stateMachine.Current == PlayerStateMachine.LocoState.WallClimb, wallClimbLoopSource, wallClimbLoopClip, wallClimbLoopMinDuration);
+        MaintainLoop(stateMachine.Current == PlayerStateMachine.LocoState.WallSlide, wallSlideLoopSource, wallSlideLoopClip, wallSlideLoopMinDuration);
+    }
+
+    private void MaintainLoop(bool shouldPlay, AudioSource source, AudioClip clip, float minDuration)
+    {
+        if (shouldPlay)
+        {
+            StartLoop(source, clip, minDuration);
+        }
+        else
+        {
+            StopLoop(source);
         }
     }
 
