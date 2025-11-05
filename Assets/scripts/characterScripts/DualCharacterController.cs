@@ -15,6 +15,12 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
     public string mergeTriggerName = "MergeTrigger";
     public string splitTriggerName = "SplitTrigger";
 
+    [Header("Animator Controllers")]
+    [Tooltip("Elior split durumundayken kullanılacak Animator Controller")]
+    public RuntimeAnimatorController eliorSplitController;
+    [Tooltip("Elior merge durumundayken kullanılacak Animator Controller")]
+    public RuntimeAnimatorController eliorMergedController;
+
     [Header("Split Placement")]
     public Vector2 splitOffset = new Vector2(0.8f, 0f);
     public float splitProbeRadius = 0.3f;
@@ -23,6 +29,16 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
     [Header("Timing")]
     public float switchCooldown = 0.35f;
     public float mergeInputCooldown = 0.45f;
+
+    [Header("Initial State")]
+    [Tooltip("Başlangıç durumu: Split (ayrık) veya Merged (birleşik) olarak başlar")]
+    public InitialState startState = InitialState.Split;
+
+    public enum InitialState
+    {
+        Split,
+        Merged
+    }
 
     [Header("Events")]
     public UnityEvent<string> OnActiveCharacterChanged;
@@ -33,6 +49,7 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
     InputAdapter simInput;
     AbilityLoadout eliorAbilities;
     AbilityLoadout simAbilities;
+    Animator eliorAnimator;
 
     bool isMerged = true;
     bool controlLocked = false;
@@ -61,6 +78,7 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
         {
             eliorInput = elior.GetComponent<InputAdapter>();
             eliorAbilities = elior.GetComponent<AbilityLoadout>();
+            eliorAnimator = elior.GetComponent<Animator>();
             elior.autoClearInput = false;
             if (splitBlockMask.value == 0)
             {
@@ -85,7 +103,15 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
 
     void Start()
     {
-        ForceSplitState();
+        // Inspector'da seçilen başlangıç durumuna göre fonksiyonu çağır
+        if (startState == InitialState.Merged)
+        {
+            ForceMergedState();
+        }
+        else
+        {
+            ForceSplitState();
+        }
     }
 
     void Update()
@@ -132,15 +158,18 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
             sim.gameObject.SetActive(true);
 
         if (eliorAbilities != null)
-            eliorAbilities.Initialise(true);
+            eliorAbilities.Initialise(false);
         if (simAbilities != null)
-            simAbilities.Initialise(true);
+            simAbilities.Initialise(false);
+
+        // Animator Controller'ı split için değiştir
+        UpdateEliorAnimatorController(false);
 
         ActivateCharacter(elior);
-        OnMergedStateChanged?.Invoke(true);
+        OnMergedStateChanged?.Invoke(false);
     }
 
-        void ForceMergedState()
+    void ForceMergedState()
     {
         isMerged = true;
         controlLocked = false;
@@ -154,6 +183,9 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
             eliorAbilities.Initialise(true);
         if (simAbilities != null)
             simAbilities.Initialise(true);
+
+        // Animator Controller'ı merge için değiştir
+        UpdateEliorAnimatorController(true);
 
         ActivateCharacter(elior);
         OnMergedStateChanged?.Invoke(true);
@@ -331,6 +363,9 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
         if (simAbilities != null)
             simAbilities.ApplyMergedState(true);
 
+        // Animator Controller'ı merge için değiştir
+        UpdateEliorAnimatorController(true);
+
         mergeCooldownTimer = mergeInputCooldown;
         switchCooldownTimer = switchCooldown;
         OnMergedStateChanged?.Invoke(true);
@@ -344,9 +379,26 @@ public class DualCharacterController : MonoBehaviour, FlashlightController.IActi
             eliorAbilities.ApplyMergedState(false);
         if (simAbilities != null)
             simAbilities.ApplyMergedState(false);
+
+        // Animator Controller'ı split için değiştir
+        UpdateEliorAnimatorController(false);
+
         mergeCooldownTimer = mergeInputCooldown;
         switchCooldownTimer = switchCooldown;
         OnMergedStateChanged?.Invoke(false);
         UnlockControl();
+    }
+
+    void UpdateEliorAnimatorController(bool merged)
+    {
+        if (!eliorAnimator)
+            return;
+
+        RuntimeAnimatorController targetController = merged ? eliorMergedController : eliorSplitController;
+        
+        if (targetController != null)
+        {
+            eliorAnimator.runtimeAnimatorController = targetController;
+        }
     }
 }
