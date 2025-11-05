@@ -14,10 +14,13 @@ AnimatorStateMachine:
     m_Position: {x: 170, y: 90, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 2799474791243376431}
-    m_Position: {x: 320, y: 220, z: 0}
+    m_Position: {x: 440, y: 170, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8418010217367420539}
-    m_Position: {x: 370, y: -30, z: 0}
+    m_Position: {x: 500, y: -50, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -8053655537619074622}
+    m_Position: {x: 160, y: 300, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: -4471145432904020486}
@@ -81,6 +84,7 @@ AnimatorState:
   m_Transitions:
   - {fileID: -4445961062874395624}
   - {fileID: 4169602435828068525}
+  - {fileID: 4636890091638784792}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -287,7 +291,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: elior 1
+  m_Name: Elior-final
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: Grounded
@@ -451,6 +455,7 @@ AnimatorState:
   m_Transitions:
   - {fileID: 1062186802325802804}
   - {fileID: -1992473472337119154}
+  - {fileID: 6934373177814536569}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -604,6 +609,7 @@ AnimatorState:
   m_Transitions:
   - {fileID: 4070041472877952594}
   - {fileID: 3526257921665165021}
+  - {fileID: 1546115304982928585}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0

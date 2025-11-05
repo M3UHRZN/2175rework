@@ -29,6 +29,7 @@ namespace Game.Settings
 
         private readonly List<AudioSource> musicSources = new();
         private readonly List<AudioSource> sfxSources = new();
+        private readonly Dictionary<AudioSource, float> originalVolumes = new();
 
         public float MasterVolume => masterVolume;
         public float MusicVolume => musicVolume;
@@ -81,24 +82,26 @@ namespace Game.Settings
 
         private void ApplyVolumes()
         {
-            AudioListener.volume = masterVolume;
+            AudioListener.volume = 1f;
 
             var musicMultiplier = masterVolume * musicVolume;
             var sfxMultiplier = masterVolume * sfxVolume;
 
+            CleanupNullSources();
+
             foreach (var source in musicSources)
             {
-                if (source != null)
+                if (source != null && originalVolumes.TryGetValue(source, out float originalVolume))
                 {
-                    source.volume = musicMultiplier;
+                    source.volume = originalVolume * musicMultiplier;
                 }
             }
 
             foreach (var source in sfxSources)
             {
-                if (source != null)
+                if (source != null && originalVolumes.TryGetValue(source, out float originalVolume))
                 {
-                    source.volume = sfxMultiplier;
+                    source.volume = originalVolume * sfxMultiplier;
                 }
             }
         }
@@ -110,8 +113,14 @@ namespace Game.Settings
                 return;
             }
 
+            if (!originalVolumes.ContainsKey(source))
+            {
+                originalVolumes[source] = source.volume;
+            }
+
             musicSources.Add(source);
-            source.volume = masterVolume * musicVolume;
+            var musicMultiplier = masterVolume * musicVolume;
+            source.volume = originalVolumes[source] * musicMultiplier;
         }
 
         public void RegisterSfxSource(AudioSource source)
@@ -121,8 +130,14 @@ namespace Game.Settings
                 return;
             }
 
+            if (!originalVolumes.ContainsKey(source))
+            {
+                originalVolumes[source] = source.volume;
+            }
+
             sfxSources.Add(source);
-            source.volume = masterVolume * sfxVolume;
+            var sfxMultiplier = masterVolume * sfxVolume;
+            source.volume = originalVolumes[source] * sfxMultiplier;
         }
 
         public void UnregisterSource(AudioSource source)
@@ -134,7 +149,34 @@ namespace Game.Settings
 
             if (musicSources.Remove(source) || sfxSources.Remove(source))
             {
-                source.volume = masterVolume;
+                if (originalVolumes.TryGetValue(source, out float originalVolume))
+                {
+                    source.volume = originalVolume;
+                    originalVolumes.Remove(source);
+                }
+            }
+        }
+
+        private void CleanupNullSources()
+        {
+            for (int i = musicSources.Count - 1; i >= 0; i--)
+            {
+                var source = musicSources[i];
+                if (source == null)
+                {
+                    musicSources.RemoveAt(i);
+                    originalVolumes.Remove(source);
+                }
+            }
+
+            for (int i = sfxSources.Count - 1; i >= 0; i--)
+            {
+                var source = sfxSources[i];
+                if (source == null)
+                {
+                    sfxSources.RemoveAt(i);
+                    originalVolumes.Remove(source);
+                }
             }
         }
     }
