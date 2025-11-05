@@ -1,224 +1,146 @@
-using System.Collections.Generic;
 using UnityEngine;
 using Game.Settings;
 
 [RequireComponent(typeof(PlayerStateMachine))]
 [RequireComponent(typeof(LocomotionMotor2D))]
 [RequireComponent(typeof(Sensors2D))]
+[RequireComponent(typeof(AudioSource))]
 public class CharacterAudioController : MonoBehaviour
 {
     [Header("Dependencies")]
     [SerializeField] private PlayerStateMachine stateMachine;
     [SerializeField] private LocomotionMotor2D locomotionMotor;
     [SerializeField] private Sensors2D sensors;
+    [SerializeField] private AudioSource audioSource;
 
-    [Header("Ground Movement")]
-    [SerializeField] private AudioSource runFootstepSource;
-    [SerializeField] private AudioClip runFootstepClip;
-    [SerializeField] private float footstepSpeedThreshold = 0.25f;
-    [Tooltip("Minimum seconds to keep the run loop active once it starts.")]
-    [SerializeField] private float runLoopMinDuration = 0.1f;
-
-    [Header("Climb")]
-    [SerializeField] private AudioSource climbLoopSource;
+    [Header("Loop Clips")]
+    [SerializeField] private AudioClip runLoopClip;
+    [SerializeField, Min(0f)] private float runSpeedThreshold = 0.1f;
     [SerializeField] private AudioClip climbLoopClip;
-    [Tooltip("Minimum seconds to keep the climb loop active once it starts.")]
-    [SerializeField] private float climbLoopMinDuration = 0.1f;
-
-    [Header("Wall Movement")]
-    [SerializeField] private AudioSource wallClimbLoopSource;
     [SerializeField] private AudioClip wallClimbLoopClip;
-    [SerializeField] private AudioSource wallSlideLoopSource;
     [SerializeField] private AudioClip wallSlideLoopClip;
-    [Tooltip("Minimum seconds to keep the wall climb loop active once it starts.")]
-    [SerializeField] private float wallClimbLoopMinDuration = 0.1f;
-    [Tooltip("Minimum seconds to keep the wall slide loop active once it starts.")]
-    [SerializeField] private float wallSlideLoopMinDuration = 0.1f;
+    [SerializeField, Min(0f)] private float verticalSpeedThreshold = 0.05f;
 
-    [Header("Airborne")]
-    [SerializeField] private AudioSource jumpSource;
+    [Header("One-Shot Clips")]
     [SerializeField] private AudioClip jumpClip;
-    [SerializeField] private float jumpMinInterval = 0.1f;
-    [Tooltip("Minimum seconds to keep the jump clip playing before retriggering.")]
-    [SerializeField] private float jumpMinDuration = 0.1f;
-    [SerializeField] private AudioSource landSource;
-    [SerializeField] private AudioClip landClip;
-    [SerializeField] private float landMinInterval = 0.1f;
-    [Tooltip("Minimum seconds to keep the landing clip playing before retriggering.")]
-    [SerializeField] private float landMinDuration = 0.1f;
-    [SerializeField] private AudioSource wallJumpSource;
+    [SerializeField, Min(0f)] private float jumpMaxDuration = 0.6f;
     [SerializeField] private AudioClip wallJumpClip;
-    [SerializeField] private float wallJumpMinInterval = 0.1f;
-    [Tooltip("Minimum seconds to keep the wall jump clip playing before retriggering.")]
-    [SerializeField] private float wallJumpMinDuration = 0.1f;
+    [SerializeField, Min(0f)] private float wallJumpMaxDuration = 0.6f;
+    [SerializeField] private AudioClip landClip;
+    [SerializeField, Min(0f)] private float landMaxDuration = 0.45f;
 
-    private readonly List<AudioSource> registeredSources = new();
-    private readonly Dictionary<AudioSource, LoopRuntimeState> loopStates = new();
-    private readonly List<AudioSource> loopStateKeys = new();
-    private float lastJumpTime = float.NegativeInfinity;
-    private float lastLandTime = float.NegativeInfinity;
-    private float lastWallJumpTime = float.NegativeInfinity;
-    private PlayerStateMachine.LocoState lastObservedLoco = PlayerStateMachine.LocoState.Idle;
-    private bool hasObservedInitialState;
-
-    private struct LoopRuntimeState
+    private enum PlaybackMode
     {
-        public float LastStartTime;
-        public float MinDuration;
-        public bool PendingStop;
+        None,
+        RunLoop,
+        ClimbLoop,
+        WallClimbLoop,
+        WallSlideLoop,
+        JumpOneShot,
+        WallJumpOneShot,
+        LandOneShot
+    }
+
+    private PlaybackMode currentMode = PlaybackMode.None;
+    private float modeStartTime;
+    private float currentMaxDuration;
+    private bool pendingLand;
+    private bool isRegistered;
+
+    private void Reset()
+    {
+        stateMachine = GetComponent<PlayerStateMachine>();
+        locomotionMotor = GetComponent<LocomotionMotor2D>();
+        sensors = GetComponent<Sensors2D>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void Awake()
     {
         CacheDependencies();
-
-        if (Application.isPlaying)
-        {
-            EnsureAudioSources();
-        }
+        ConfigureAudioSource();
     }
 
     private void OnEnable()
     {
         CacheDependencies();
+        ConfigureAudioSource();
 
-        if (!Application.isPlaying)
+        if (stateMachine)
         {
-            return;
-        }
-
-        EnsureAudioSources();
-
-        if (stateMachine != null)
-        {
+            stateMachine.OnLocoChanged += HandleLocoChanged;
             stateMachine.OnPhaseTriggered += HandlePhaseTriggered;
-            lastObservedLoco = stateMachine.Current;
-            hasObservedInitialState = true;
         }
 
-        RegisterSources();
-        SyncLoopStates(stateMachine != null ? stateMachine.Current : PlayerStateMachine.LocoState.Idle);
+        RegisterAudioSource();
+        currentMode = PlaybackMode.None;
+        pendingLand = false;
     }
 
     private void OnDisable()
     {
-        if (!Application.isPlaying)
+        if (stateMachine)
         {
-            return;
-        }
-
-        if (stateMachine != null)
-        {
+            stateMachine.OnLocoChanged -= HandleLocoChanged;
             stateMachine.OnPhaseTriggered -= HandlePhaseTriggered;
         }
 
-        UnregisterSources();
-        StopLoop(runFootstepSource, true);
-        StopLoop(climbLoopSource, true);
-        StopLoop(wallClimbLoopSource, true);
-        StopLoop(wallSlideLoopSource, true);
+        StopAudio(true);
+        pendingLand = false;
 
-        loopStates.Clear();
-        loopStateKeys.Clear();
-        hasObservedInitialState = false;
+        UnregisterAudioSource();
     }
 
     private void Update()
     {
-        if (!Application.isPlaying)
+        if (!Application.isPlaying || audioSource == null)
         {
             return;
         }
 
-        MonitorLocomotionChanges();
-        UpdateFootsteps();
-        UpdateLoopActivity();
-        UpdatePendingLoopStops();
-    }
-
-    private void MonitorLocomotionChanges()
-    {
-        if (stateMachine == null)
+        if (pendingLand && (sensors == null || sensors.isGrounded))
         {
-            return;
+            PlayOneShot(landClip, PlaybackMode.LandOneShot, landMaxDuration);
+            pendingLand = false;
         }
 
-        var current = stateMachine.Current;
-
-        if (!hasObservedInitialState)
+        if (IsOneShot(currentMode))
         {
-            lastObservedLoco = current;
-            hasObservedInitialState = true;
-            return;
+            if (!audioSource.isPlaying)
+            {
+                StopAudio(true);
+            }
+            else if (currentMaxDuration > 0f && Time.time >= modeStartTime + currentMaxDuration)
+            {
+                audioSource.Stop();
+                StopAudio(true);
+            }
+            else
+            {
+                return;
+            }
         }
 
-        if (current == lastObservedLoco)
-        {
-            return;
-        }
-
-        HandleLocoChanged(lastObservedLoco, current);
-        lastObservedLoco = current;
+        UpdateLoopPlayback();
     }
 
     private void HandleLocoChanged(PlayerStateMachine.LocoState previous, PlayerStateMachine.LocoState current)
     {
-        switch (previous)
+        if (current == PlayerStateMachine.LocoState.JumpRise)
         {
-            case PlayerStateMachine.LocoState.Climb:
-                StopLoop(climbLoopSource);
-                break;
-            case PlayerStateMachine.LocoState.WallClimb:
-                StopLoop(wallClimbLoopSource);
-                break;
-            case PlayerStateMachine.LocoState.WallSlide:
-                StopLoop(wallSlideLoopSource);
-                break;
-        }
-
-        switch (current)
-        {
-            case PlayerStateMachine.LocoState.Climb:
-                StartLoop(climbLoopSource, climbLoopClip, climbLoopMinDuration);
-                break;
-            case PlayerStateMachine.LocoState.WallClimb:
-                StartLoop(wallClimbLoopSource, wallClimbLoopClip, wallClimbLoopMinDuration);
-                break;
-            case PlayerStateMachine.LocoState.WallSlide:
-                StartLoop(wallSlideLoopSource, wallSlideLoopClip, wallSlideLoopMinDuration);
-                break;
-            case PlayerStateMachine.LocoState.JumpRise:
-                TryPlayClip(jumpSource, jumpClip, ref lastJumpTime, jumpMinInterval, jumpMinDuration);
-                break;
+            PlayOneShot(jumpClip, PlaybackMode.JumpOneShot, jumpMaxDuration);
         }
 
         if (IsLandingTransition(previous, current))
         {
-            TryPlayClip(landSource, landClip, ref lastLandTime, landMinInterval, landMinDuration);
-        }
-    }
-
-    private void UpdateLoopActivity()
-    {
-        if (stateMachine == null)
-        {
-            return;
-        }
-
-        MaintainLoop(stateMachine.Current == PlayerStateMachine.LocoState.Climb, climbLoopSource, climbLoopClip, climbLoopMinDuration);
-        MaintainLoop(stateMachine.Current == PlayerStateMachine.LocoState.WallClimb, wallClimbLoopSource, wallClimbLoopClip, wallClimbLoopMinDuration);
-        MaintainLoop(stateMachine.Current == PlayerStateMachine.LocoState.WallSlide, wallSlideLoopSource, wallSlideLoopClip, wallSlideLoopMinDuration);
-    }
-
-    private void MaintainLoop(bool shouldPlay, AudioSource source, AudioClip clip, float minDuration)
-    {
-        if (shouldPlay)
-        {
-            StartLoop(source, clip, minDuration);
-        }
-        else
-        {
-            StopLoop(source);
+            if (sensors == null || sensors.isGrounded)
+            {
+                PlayOneShot(landClip, PlaybackMode.LandOneShot, landMaxDuration);
+            }
+            else if (landClip != null)
+            {
+                pendingLand = true;
+            }
         }
     }
 
@@ -226,207 +148,159 @@ public class CharacterAudioController : MonoBehaviour
     {
         if (phase == PlayerStateMachine.PhaseState.WallJump)
         {
-            TryPlayClip(wallJumpSource, wallJumpClip, ref lastWallJumpTime, wallJumpMinInterval, wallJumpMinDuration);
+            PlayOneShot(wallJumpClip, PlaybackMode.WallJumpOneShot, wallJumpMaxDuration);
         }
     }
 
-    private void UpdateFootsteps()
+    private void UpdateLoopPlayback()
     {
-        if (stateMachine == null || locomotionMotor == null || sensors == null)
+        var desiredMode = DetermineLoopMode();
+
+        if (desiredMode == PlaybackMode.None)
         {
+            if (IsLoop(currentMode))
+            {
+                StopAudio(true);
+            }
             return;
         }
 
-        var shouldLoop = stateMachine.Current == PlayerStateMachine.LocoState.Run &&
-                         sensors.isGrounded &&
-                         Mathf.Abs(locomotionMotor.velocityX) >= footstepSpeedThreshold;
-
-        if (runFootstepSource == null)
+        var desiredClip = GetClipForMode(desiredMode);
+        if (desiredClip == null)
         {
+            if (IsLoop(currentMode))
+            {
+                StopAudio(true);
+            }
             return;
         }
 
-        if (shouldLoop)
+        if (currentMode == desiredMode && audioSource.clip == desiredClip && audioSource.loop)
         {
-            StartLoop(runFootstepSource, runFootstepClip, runLoopMinDuration);
+            if (!audioSource.isPlaying)
+            {
+                audioSource.Play();
+            }
+            return;
         }
-        else
+
+        audioSource.loop = true;
+        if (audioSource.clip != desiredClip)
         {
-            StopLoop(runFootstepSource);
+            audioSource.Stop();
+            audioSource.clip = desiredClip;
         }
+
+        audioSource.Play();
+        currentMode = desiredMode;
+        modeStartTime = Time.time;
+        currentMaxDuration = 0f;
     }
 
-    private bool TryPlayClip(AudioSource source, AudioClip clip, ref float lastTime, float minInterval, float minDuration = 0f)
+    private PlaybackMode DetermineLoopMode()
     {
-        if (source == null)
+        if (stateMachine == null || locomotionMotor == null)
+        {
+            return PlaybackMode.None;
+        }
+
+        switch (stateMachine.Current)
+        {
+            case PlayerStateMachine.LocoState.Run:
+                if (runLoopClip != null && sensors != null && sensors.isGrounded && Mathf.Abs(locomotionMotor.velocityX) > runSpeedThreshold)
+                {
+                    return PlaybackMode.RunLoop;
+                }
+                break;
+            case PlayerStateMachine.LocoState.Climb:
+                if (climbLoopClip != null && Mathf.Abs(locomotionMotor.velocityY) > verticalSpeedThreshold)
+                {
+                    return PlaybackMode.ClimbLoop;
+                }
+                break;
+            case PlayerStateMachine.LocoState.WallClimb:
+                if (wallClimbLoopClip != null && Mathf.Abs(locomotionMotor.velocityY) > verticalSpeedThreshold)
+                {
+                    return PlaybackMode.WallClimbLoop;
+                }
+                break;
+            case PlayerStateMachine.LocoState.WallSlide:
+                if (wallSlideLoopClip != null && Mathf.Abs(locomotionMotor.velocityY) > verticalSpeedThreshold)
+                {
+                    return PlaybackMode.WallSlideLoop;
+                }
+                break;
+        }
+
+        return PlaybackMode.None;
+    }
+
+    private AudioClip GetClipForMode(PlaybackMode mode)
+    {
+        return mode switch
+        {
+            PlaybackMode.RunLoop => runLoopClip,
+            PlaybackMode.ClimbLoop => climbLoopClip,
+            PlaybackMode.WallClimbLoop => wallClimbLoopClip,
+            PlaybackMode.WallSlideLoop => wallSlideLoopClip,
+            _ => null
+        };
+    }
+
+    private bool PlayOneShot(AudioClip clip, PlaybackMode mode, float maxDuration)
+    {
+        if (audioSource == null || clip == null)
         {
             return false;
         }
 
-        float requiredDelay = Mathf.Max(0f, Mathf.Max(minInterval, minDuration));
+        audioSource.loop = false;
+        audioSource.Stop();
+        audioSource.clip = clip;
+        audioSource.Play();
 
-        if (Time.time < lastTime + requiredDelay)
-        {
-            return false;
-        }
-
-        if (clip != null && source.clip != clip)
-        {
-            source.clip = clip;
-        }
-
-        if (source.clip == null)
-        {
-            return false;
-        }
-
-        source.loop = false;
-
-        if (source.isPlaying)
-        {
-            source.Stop();
-        }
-
-        source.Play();
-
-        lastTime = Time.time;
+        currentMode = mode;
+        modeStartTime = Time.time;
+        currentMaxDuration = maxDuration > 0f ? maxDuration : clip.length;
+        pendingLand = false;
         return true;
     }
 
-    private void StartLoop(AudioSource source, AudioClip clip, float minDuration)
+    private void StopAudio(bool clearClip)
     {
-        if (source == null)
+        if (audioSource == null)
         {
             return;
         }
 
-        bool clipChanged = false;
-
-        if (clip != null && source.clip != clip)
+        if (audioSource.isPlaying)
         {
-            clipChanged = true;
-            source.clip = clip;
+            audioSource.Stop();
         }
 
-        if (source.clip == null)
+        audioSource.loop = false;
+        if (clearClip)
         {
-            return;
+            audioSource.clip = null;
         }
 
-        source.loop = true;
-
-        if (clipChanged && source.isPlaying)
-        {
-            source.Stop();
-        }
-
-        var state = loopStates.TryGetValue(source, out var existingState) ? existingState : new LoopRuntimeState
-        {
-            LastStartTime = float.NegativeInfinity
-        };
-
-        state.MinDuration = Mathf.Max(0f, minDuration);
-        state.PendingStop = false;
-
-        if (!source.isPlaying)
-        {
-            source.Play();
-            state.LastStartTime = Time.time;
-        }
-        else if (float.IsNegativeInfinity(state.LastStartTime))
-        {
-            state.LastStartTime = Time.time;
-        }
-
-        loopStates[source] = state;
+        currentMode = PlaybackMode.None;
+        currentMaxDuration = 0f;
     }
 
-    private void StopLoop(AudioSource source, bool immediate = false)
+    private static bool IsOneShot(PlaybackMode mode)
     {
-        if (source == null)
-        {
-            return;
-        }
-
-        if (!loopStates.TryGetValue(source, out var state))
-        {
-            state = new LoopRuntimeState
-            {
-                LastStartTime = float.NegativeInfinity,
-                MinDuration = 0f,
-                PendingStop = false
-            };
-        }
-
-        if (immediate || !source.isPlaying || Time.time >= state.LastStartTime + state.MinDuration)
-        {
-            FinalizeLoopStop(source, ref state);
-        }
-        else
-        {
-            state.PendingStop = true;
-            loopStates[source] = state;
-        }
+        return mode == PlaybackMode.JumpOneShot || mode == PlaybackMode.WallJumpOneShot || mode == PlaybackMode.LandOneShot;
     }
 
-    private void FinalizeLoopStop(AudioSource source, ref LoopRuntimeState state)
+    private static bool IsLoop(PlaybackMode mode)
     {
-        source.loop = false;
-
-        if (source.isPlaying)
-        {
-            source.Stop();
-        }
-
-        state.PendingStop = false;
-        state.LastStartTime = float.NegativeInfinity;
-        loopStates[source] = state;
-    }
-
-    private void UpdatePendingLoopStops()
-    {
-        if (loopStates.Count == 0)
-        {
-            return;
-        }
-
-        loopStateKeys.Clear();
-        foreach (var key in loopStates.Keys)
-        {
-            loopStateKeys.Add(key);
-        }
-
-        foreach (var source in loopStateKeys)
-        {
-            if (source == null)
-            {
-                loopStates.Remove(source);
-                continue;
-            }
-
-            var state = loopStates[source];
-
-            if (!state.PendingStop)
-            {
-                continue;
-            }
-
-            if (!source.isPlaying || Time.time >= state.LastStartTime + state.MinDuration)
-            {
-                FinalizeLoopStop(source, ref state);
-            }
-            else
-            {
-                loopStates[source] = state;
-            }
-        }
-
-        loopStateKeys.Clear();
+        return mode == PlaybackMode.RunLoop || mode == PlaybackMode.ClimbLoop || mode == PlaybackMode.WallClimbLoop || mode == PlaybackMode.WallSlideLoop;
     }
 
     private bool IsLandingTransition(PlayerStateMachine.LocoState previous, PlayerStateMachine.LocoState current)
     {
-        if (current != PlayerStateMachine.LocoState.Run && current != PlayerStateMachine.LocoState.Idle)
+        if (current != PlayerStateMachine.LocoState.Idle && current != PlayerStateMachine.LocoState.Run)
         {
             return false;
         }
@@ -441,67 +315,6 @@ public class CharacterAudioController : MonoBehaviour
                 return true;
             default:
                 return false;
-        }
-    }
-
-    private void RegisterSources()
-    {
-        registeredSources.Clear();
-        foreach (var source in EnumerateSources())
-        {
-            if (source == null || registeredSources.Contains(source))
-            {
-                continue;
-            }
-
-            registeredSources.Add(source);
-            if (AudioSettingsManager.Instance != null)
-            {
-                AudioSettingsManager.Instance.RegisterSfxSource(source);
-            }
-        }
-    }
-
-    private void UnregisterSources()
-    {
-        if (AudioSettingsManager.Instance == null)
-        {
-            registeredSources.Clear();
-            return;
-        }
-
-        foreach (var source in registeredSources)
-        {
-            AudioSettingsManager.Instance.UnregisterSource(source);
-        }
-
-        registeredSources.Clear();
-    }
-
-    private IEnumerable<AudioSource> EnumerateSources()
-    {
-        if (runFootstepSource != null) yield return runFootstepSource;
-        if (climbLoopSource != null) yield return climbLoopSource;
-        if (wallClimbLoopSource != null) yield return wallClimbLoopSource;
-        if (wallSlideLoopSource != null) yield return wallSlideLoopSource;
-        if (jumpSource != null) yield return jumpSource;
-        if (landSource != null) yield return landSource;
-        if (wallJumpSource != null) yield return wallJumpSource;
-    }
-
-    private void SyncLoopStates(PlayerStateMachine.LocoState current)
-    {
-        switch (current)
-        {
-            case PlayerStateMachine.LocoState.Climb:
-                StartLoop(climbLoopSource, climbLoopClip, climbLoopMinDuration);
-                break;
-            case PlayerStateMachine.LocoState.WallClimb:
-                StartLoop(wallClimbLoopSource, wallClimbLoopClip, wallClimbLoopMinDuration);
-                break;
-            case PlayerStateMachine.LocoState.WallSlide:
-                StartLoop(wallSlideLoopSource, wallSlideLoopClip, wallSlideLoopMinDuration);
-                break;
         }
     }
 
@@ -521,45 +334,44 @@ public class CharacterAudioController : MonoBehaviour
         {
             sensors = GetComponent<Sensors2D>();
         }
-    }
 
-    private void EnsureAudioSources()
-    {
-        EnsureSource(ref runFootstepSource, "Run Footsteps");
-        EnsureSource(ref climbLoopSource, "Climb Loop");
-        EnsureSource(ref wallClimbLoopSource, "Wall Climb Loop");
-        EnsureSource(ref wallSlideLoopSource, "Wall Slide Loop");
-        EnsureSource(ref jumpSource, "Jump");
-        EnsureSource(ref landSource, "Land");
-        EnsureSource(ref wallJumpSource, "Wall Jump");
-    }
-
-    private void EnsureSource(ref AudioSource source, string childName)
-    {
-        if (source == null)
+        if (!audioSource)
         {
-            source = CreateChildSource(childName);
+            audioSource = GetComponent<AudioSource>();
         }
     }
 
-    private AudioSource CreateChildSource(string childName)
+    private void ConfigureAudioSource()
     {
-        var child = new GameObject(childName);
-        child.transform.SetParent(transform);
-        child.transform.localPosition = Vector3.zero;
-        child.transform.localRotation = Quaternion.identity;
-        child.transform.localScale = Vector3.one;
-        child.hideFlags = HideFlags.DontSave;
+        if (audioSource == null)
+        {
+            return;
+        }
 
-        var source = child.AddComponent<AudioSource>();
-        ConfigureSourceDefaults(source);
-        return source;
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
     }
 
-    private void ConfigureSourceDefaults(AudioSource source)
+    private void RegisterAudioSource()
     {
-        source.playOnAwake = false;
-        source.loop = false;
-        source.spatialBlend = 0f;
+        if (audioSource == null || AudioSettingsManager.Instance == null || isRegistered)
+        {
+            return;
+        }
+
+        AudioSettingsManager.Instance.RegisterSfxSource(audioSource);
+        isRegistered = true;
+    }
+
+    private void UnregisterAudioSource()
+    {
+        if (!isRegistered || audioSource == null || AudioSettingsManager.Instance == null)
+        {
+            isRegistered = false;
+            return;
+        }
+
+        AudioSettingsManager.Instance.UnregisterSource(audioSource);
+        isRegistered = false;
     }
 }
