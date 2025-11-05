@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using Game.Settings;
 
 /// <summary>
 /// Handles cooperative level transitions that require both main characters to stand
@@ -415,13 +416,19 @@ public class CoopLevelExit : MonoBehaviour
             return;
         }
 
+        var currentScene = SceneManager.GetActiveScene();
+        string currentSceneName = currentScene.name;
+        string targetSceneName = null;
+
         if (!string.IsNullOrEmpty(nextSceneName))
         {
-            SceneManager.LoadScene(nextSceneName);
+            targetSceneName = nextSceneName;
+            // Level progress'i kaydet
+            SaveLevelProgress(currentSceneName, targetSceneName);
+            SceneManager.LoadScene(targetSceneName);
             return;
         }
 
-        var currentScene = SceneManager.GetActiveScene();
         int targetIndex = currentScene.buildIndex + buildIndexOffset;
         if (targetIndex < 0 || targetIndex >= SceneManager.sceneCountInBuildSettings)
         {
@@ -430,6 +437,27 @@ public class CoopLevelExit : MonoBehaviour
             return;
         }
 
+        // Build index'ten scene adını al
+        var targetScenePath = SceneUtility.GetScenePathByBuildIndex(targetIndex);
+        if (!string.IsNullOrEmpty(targetScenePath))
+        {
+            var sceneNameFromPath = System.IO.Path.GetFileNameWithoutExtension(targetScenePath);
+            targetSceneName = sceneNameFromPath;
+        }
+
+        // Level progress'i kaydet
+        SaveLevelProgress(currentSceneName, targetSceneName);
         SceneManager.LoadScene(targetIndex);
+    }
+
+    void SaveLevelProgress(string currentSceneName, string nextSceneName)
+    {
+        if (LevelProgressSaveManager.Instance == null)
+        {
+            return;
+        }
+
+        // Mevcut seviyeyi tamamlandı olarak işaretle ve bir sonraki seviyeyi aç
+        LevelProgressSaveManager.Instance.CompleteLevel(currentSceneName, nextSceneName);
     }
 }

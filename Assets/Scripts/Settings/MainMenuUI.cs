@@ -75,6 +75,9 @@ namespace Game.Settings
             {
                 settingsPanel.SetActive(false);
             }
+
+            // Level panel açıldığında tüm level butonlarının unlock durumunu güncelle
+            UpdateLevelButtonsState();
         }
 
         public void ShowSettingsPanel()
@@ -154,6 +157,25 @@ namespace Game.Settings
             foreach (var levelButton in levelButtons)
             {
                 levelButton?.BindToMenu(this);
+            }
+
+            // İlk yüklemede unlock durumlarını güncelle
+            UpdateLevelButtonsState();
+        }
+
+        /// <summary>
+        /// Tüm level butonlarının unlock durumunu günceller.
+        /// </summary>
+        private void UpdateLevelButtonsState()
+        {
+            if (levelButtons == null || levelButtons.Length == 0)
+            {
+                levelButtons = GetComponentsInChildren<LevelButton>(true);
+            }
+
+            foreach (var levelButton in levelButtons)
+            {
+                levelButton?.UpdateLockState();
             }
         }
 

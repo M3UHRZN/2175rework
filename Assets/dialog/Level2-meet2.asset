@@ -14,36 +14,48 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - speakerId: Sim
-    speakerDisplayName: ???
-    text: " Hey! Bir ya\u015Fam formu mu? Evet evet!"
+    speakerDisplayName: Sim
+    text: "Hey ya\u015Fam formu. Burada her \u015Fey metal yiyecek bir \u015Fey pek
+      yok ama sana g\xF6stermem gereken bir \u015Fey var."
     movementLock: 2
-    autoAdvanceDelay: 5
+    autoAdvanceDelay: 10
     lineClip: {fileID: 8300000, guid: 69eac950ca9feb645b47c1f0b1db0810, type: 3}
   - speakerId: Elior
     speakerDisplayName: Elior
-    text: "Bu k\xFC\xE7\xFCk aciz robot da ne b\xF6yle?"
+    text: "Ad\u0131m Elior,Sim. Ayr\u0131ca senin t\xFCr\xFCnden hi\xE7 hay\u0131r
+      geldi\u011Fini g\xF6rmedim. k\xFC\xE7\xFCk ve acizsin. kolay lokma pe\u015Findesin
+      san\u0131rsam"
     movementLock: 2
-    autoAdvanceDelay: 5
+    autoAdvanceDelay: 10
     lineClip: {fileID: 0}
   - speakerId: Sim
-    speakerDisplayName: ???
-    text: "H\xE2l\xE2 nefes alan ve y\xFCr\xFCyen bir insan g\xF6rmeyeli uzun zaman
-      oldu."
+    speakerDisplayName: Sim
+    text: " Merak etme seni yemeyece\u011Fim donan\u0131m\u0131m buna el vermiyor\u2026
+      Burada sana ben  rehberlik edece\u011Fim. H\u0131zl\u0131ca al\u0131\u015Fsan
+      iyi olur zaten ba\u015Fka bir se\xE7ene\u011Fin  yok. \u015Eimdi bu rengarenk(!)
+      seyahatimize ba\u015Flayabiliriz k\xFC\xE7\xFCk Elior"
     movementLock: 2
-    autoAdvanceDelay: 5
+    autoAdvanceDelay: 15
     lineClip: {fileID: 8300000, guid: 69eac950ca9feb645b47c1f0b1db0810, type: 3}
   - speakerId: Elior
     speakerDisplayName: Elior
-    text: Kimsin sen?
+    text: "Tamam seninle gelece\u011Fim."
     movementLock: 2
     autoAdvanceDelay: 5
     lineClip: {fileID: 0}
   - speakerId: Sim
     speakerDisplayName: Sim
-    text: "Kim de\u011Fil ! Sim hahahaha. Gel buraya sana yiyecek bi\u015Feyler ayarlayay\u0131m
-      aciz k\u0131z."
+    text: "Do\u011Fru karar\u0131 verdin ama haberin bile yok. Tebrikler \u201Cdo\u011Fal\u201D
+      zeka!"
     movementLock: 2
-    autoAdvanceDelay: 5
+    autoAdvanceDelay: 10
+    lineClip: {fileID: 8300000, guid: 8f1959fab28a9c9428bf6f5a1190674f, type: 3}
+  - speakerId: Sim
+    speakerDisplayName: Sim
+    text: "hemen \xFCst\xFCm\xFCzde bir asans\xF6r var. Yerle\u015Feknin alt katlar\u0131na
+      inmeliyiz. Hadi yola koyulal\u0131m."
+    movementLock: 2
+    autoAdvanceDelay: 10
     lineClip: {fileID: 8300000, guid: 8f1959fab28a9c9428bf6f5a1190674f, type: 3}
   onSequenceFinished:
     m_PersistentCalls:
