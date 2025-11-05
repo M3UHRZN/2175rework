@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -33,6 +34,7 @@ public class DialogueManager : MonoBehaviour
     int currentIndex = -1;
     DialogueCharacterBinding lockedBinding;
     bool allLocked;
+    Coroutine autoAdvanceRoutine;
 
     void Awake()
     {
@@ -109,6 +111,7 @@ public class DialogueManager : MonoBehaviour
     void ShowNextLine()
     {
         UnlockMovement();
+        CancelAutoAdvance();
 
         currentIndex++;
         if (currentSequence == null || currentSequence.lines == null || currentIndex >= currentSequence.lines.Count)
@@ -127,6 +130,7 @@ public class DialogueManager : MonoBehaviour
         LockMovement(line);
         dialogueUI?.ShowLine(line.speakerDisplayName, line.speakerId, line.text);
         onLineChanged?.Invoke(line);
+        ScheduleAutoAdvance(line, currentIndex);
     }
 
     void LockMovement(DialogueSequence.DialogueLine line)
@@ -176,6 +180,7 @@ public class DialogueManager : MonoBehaviour
     {
         var finishedSequence = currentSequence;
         UnlockMovement();
+        CancelAutoAdvance();
         dialogueUI?.Hide();
         currentSequence = null;
         currentIndex = -1;
@@ -183,6 +188,34 @@ public class DialogueManager : MonoBehaviour
         {
             finishedSequence.onSequenceFinished?.Invoke();
             onDialogueFinished?.Invoke(finishedSequence);
+        }
+    }
+
+    void ScheduleAutoAdvance(DialogueSequence.DialogueLine line, int lineIndex)
+    {
+        if (line == null || line.autoAdvanceDelay <= 0f)
+            return;
+
+        autoAdvanceRoutine = StartCoroutine(AutoAdvanceAfterDelay(line.autoAdvanceDelay, lineIndex));
+    }
+
+    IEnumerator AutoAdvanceAfterDelay(float delay, int lineIndex)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (currentSequence == null || currentIndex != lineIndex)
+            yield break;
+
+        autoAdvanceRoutine = null;
+        Advance();
+    }
+
+    void CancelAutoAdvance()
+    {
+        if (autoAdvanceRoutine != null)
+        {
+            StopCoroutine(autoAdvanceRoutine);
+            autoAdvanceRoutine = null;
         }
     }
 

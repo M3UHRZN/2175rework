@@ -26,6 +26,9 @@ public class DialogueSequence : ScriptableObject
 
         [Tooltip("Bu satır sırasında hangi karakterlerin hareketinin kilitleneceği.")]
         public DialogueMovementLock movementLock = DialogueMovementLock.None;
+
+        [Tooltip("> 0 ise satır bu süre sonunda otomatik olarak ilerler. 0 veya daha küçük değerler manuel ilerletme gerektirir.")]
+        public float autoAdvanceDelay;
     }
 }
 
