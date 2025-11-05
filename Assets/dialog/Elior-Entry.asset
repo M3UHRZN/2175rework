@@ -19,6 +19,18 @@ MonoBehaviour:
     movementLock: 0
     autoAdvanceDelay: 3
     lineClip: {fileID: 0}
+  - speakerId: elior
+    speakerDisplayName: 
+    text: "Yemek yemeyeli 4 g\xFCn oluyor"
+    movementLock: 0
+    autoAdvanceDelay: 3
+    lineClip: {fileID: 0}
+  - speakerId: elior
+    speakerDisplayName: 
+    text: "D\xFCnya gittik\xE7e boku yedi"
+    movementLock: 0
+    autoAdvanceDelay: 3
+    lineClip: {fileID: 0}
   onSequenceFinished:
     m_PersistentCalls:
       m_Calls: []

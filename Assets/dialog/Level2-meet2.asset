@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f6640c159706434e90efde580097589, type: 3}
+  m_Name: Level2-meet2
+  m_EditorClassIdentifier: 
+  lines:
+  - speakerId: Sim
+    speakerDisplayName: ???
+    text: " Hey! Bir ya\u015Fam formu mu? Evet evet!"
+    movementLock: 2
+    autoAdvanceDelay: 5
+    lineClip: {fileID: 8300000, guid: 69eac950ca9feb645b47c1f0b1db0810, type: 3}
+  - speakerId: Elior
+    speakerDisplayName: Elior
+    text: "Bu k\xFC\xE7\xFCk aciz robot da ne b\xF6yle?"
+    movementLock: 2
+    autoAdvanceDelay: 5
+    lineClip: {fileID: 0}
+  - speakerId: Sim
+    speakerDisplayName: ???
+    text: "H\xE2l\xE2 nefes alan ve y\xFCr\xFCyen bir insan g\xF6rmeyeli uzun zaman
+      oldu."
+    movementLock: 2
+    autoAdvanceDelay: 5
+    lineClip: {fileID: 8300000, guid: 69eac950ca9feb645b47c1f0b1db0810, type: 3}
+  - speakerId: Elior
+    speakerDisplayName: Elior
+    text: Kimsin sen?
+    movementLock: 2
+    autoAdvanceDelay: 5
+    lineClip: {fileID: 0}
+  - speakerId: Sim
+    speakerDisplayName: Sim
+    text: "Kim de\u011Fil ! Sim hahahaha. Gel buraya sana yiyecek bi\u015Feyler ayarlayay\u0131m
+      aciz k\u0131z."
+    movementLock: 2
+    autoAdvanceDelay: 5
+    lineClip: {fileID: 8300000, guid: 8f1959fab28a9c9428bf6f5a1190674f, type: 3}
+  onSequenceFinished:
+    m_PersistentCalls:
+      m_Calls: []

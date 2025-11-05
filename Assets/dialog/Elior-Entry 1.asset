@@ -15,9 +15,9 @@ MonoBehaviour:
   lines:
   - speakerId: elior
     speakerDisplayName: 
-    text: ' Bu da ne?'
+    text: " Bu da ne? olduk\xE7a sa\u011Flam g\xF6r\xFCn\xFCyor"
     movementLock: 0
-    autoAdvanceDelay: 3
+    autoAdvanceDelay: 4
     lineClip: {fileID: 0}
   onSequenceFinished:
     m_PersistentCalls:
