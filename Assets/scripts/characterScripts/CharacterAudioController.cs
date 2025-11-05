@@ -45,24 +45,25 @@ public class CharacterAudioController : MonoBehaviour
 
     private void Awake()
     {
-        if (!stateMachine)
-        {
-            stateMachine = GetComponent<PlayerStateMachine>();
-        }
+        CacheDependencies();
 
-        if (!locomotionMotor)
+        if (Application.isPlaying)
         {
-            locomotionMotor = GetComponent<LocomotionMotor2D>();
-        }
-
-        if (!sensors)
-        {
-            sensors = GetComponent<Sensors2D>();
+            EnsureAudioSources();
         }
     }
 
     private void OnEnable()
     {
+        CacheDependencies();
+
+        if (!Application.isPlaying)
+        {
+            return;
+        }
+
+        EnsureAudioSources();
+
         if (stateMachine != null)
         {
             stateMachine.OnLocoChanged += HandleLocoChanged;
@@ -75,6 +76,11 @@ public class CharacterAudioController : MonoBehaviour
 
     private void OnDisable()
     {
+        if (!Application.isPlaying)
+        {
+            return;
+        }
+
         if (stateMachine != null)
         {
             stateMachine.OnLocoChanged -= HandleLocoChanged;
@@ -90,6 +96,11 @@ public class CharacterAudioController : MonoBehaviour
 
     private void Update()
     {
+        if (!Application.isPlaying)
+        {
+            return;
+        }
+
         UpdateFootsteps();
     }
 
@@ -333,5 +344,63 @@ public class CharacterAudioController : MonoBehaviour
                 StartLoop(wallSlideLoopSource, wallSlideLoopClip);
                 break;
         }
+    }
+
+    private void CacheDependencies()
+    {
+        if (!stateMachine)
+        {
+            stateMachine = GetComponent<PlayerStateMachine>();
+        }
+
+        if (!locomotionMotor)
+        {
+            locomotionMotor = GetComponent<LocomotionMotor2D>();
+        }
+
+        if (!sensors)
+        {
+            sensors = GetComponent<Sensors2D>();
+        }
+    }
+
+    private void EnsureAudioSources()
+    {
+        EnsureSource(ref runFootstepSource, "Run Footsteps");
+        EnsureSource(ref climbLoopSource, "Climb Loop");
+        EnsureSource(ref wallClimbLoopSource, "Wall Climb Loop");
+        EnsureSource(ref wallSlideLoopSource, "Wall Slide Loop");
+        EnsureSource(ref jumpSource, "Jump");
+        EnsureSource(ref landSource, "Land");
+        EnsureSource(ref wallJumpSource, "Wall Jump");
+    }
+
+    private void EnsureSource(ref AudioSource source, string childName)
+    {
+        if (source == null)
+        {
+            source = CreateChildSource(childName);
+        }
+    }
+
+    private AudioSource CreateChildSource(string childName)
+    {
+        var child = new GameObject(childName);
+        child.transform.SetParent(transform);
+        child.transform.localPosition = Vector3.zero;
+        child.transform.localRotation = Quaternion.identity;
+        child.transform.localScale = Vector3.one;
+        child.hideFlags = HideFlags.DontSave;
+
+        var source = child.AddComponent<AudioSource>();
+        ConfigureSourceDefaults(source);
+        return source;
+    }
+
+    private void ConfigureSourceDefaults(AudioSource source)
+    {
+        source.playOnAwake = false;
+        source.loop = false;
+        source.spatialBlend = 0f;
     }
 }
