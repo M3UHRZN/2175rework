@@ -21,14 +21,14 @@ Bu belge, `StartMenu` sahnesinde çalışacak ana menüyü Unity editöründe ke
 1. Canvas altında `MainPanel` adında boş bir UI nesnesi (Empty Object) oluşturun.
 2. `Image`, `Vertical Layout Group` ve `Content Size Fitter` bileşenlerini ekleyerek panelin arka planını ve düzenini ayarlayın.
 3. Panelin içinde aşağıdaki öğeleri oluşturun:
-   - Üstte bir `Text` bileşeni (örn. "Oyuna Hoş Geldiniz").
+   - Üstte bir `TextMeshPro - Text (UI)` bileşeni (örn. "Oyuna Hoş Geldiniz").
    - `Start`, `Ayarlar` ve `Çıkış` adlarında üç adet `Button`.
 4. `MainMenuUI` bileşeninde yer alan `Start Button`, `Settings Button` ve `Exit Button` alanları otomatik dolmuyorsa ilgili butonları Inspector'dan sürükleyip bırakın.
 
 ## 4. Seviye Paneli (`LevelPanel`)
 1. Canvas altında `LevelPanel` adında ikinci bir panel oluşturun (MainPanel'deki bileşenlerin aynısını kullanabilirsiniz).
 2. Panel içine şu öğeleri yerleştirin:
-   - Bir `Text` bileşeni (örn. "Seviye Seç").
+   - Bir `TextMeshPro - Text (UI)` bileşeni (örn. "Seviye Seç").
    - Her seviye için bir `Button`. Butonların üzerine `LevelButton` script'ini ekleyin ve `Scene Name` alanına yüklenecek sahnenin adını yazın (örn. `level1`).
    - En altta `Back` veya `Geri` adlı bir `Button`.
 3. `LevelPanel` GameObject'ine `LevelButton` script'i eklenmiş butonlar `MainMenuUI` tarafından otomatik algılanır. Gerekirse Inspector'da `Level Button Back` alanına "Geri" butonunu bağlayın.
@@ -37,14 +37,14 @@ Bu belge, `StartMenu` sahnesinde çalışacak ana menüyü Unity editöründe ke
 1. Canvas altında `SettingsPanel` adında üçüncü bir panel oluşturun.
 2. Panelin GameObject'ine `AudioSettingsView` script'ini ekleyin.
 3. Panel içine aşağıdaki düzeni kurun:
-   - Bir `Text` bileşeni (örn. "Ses Ayarları").
+   - Bir `TextMeshPro - Text (UI)` bileşeni (örn. "Ses Ayarları").
    - Her biri bir `Slider` içeren üç ayrı grup:
      - `Ana Ses` (Master)
      - `Müzik` (Music)
      - `SFX`
-   - Her slider'ın yanında/altında yüzde değerini gösterecek bir `Text` oluşturun. `AudioSettingsView` slider'a göre otomatik olarak eşleşmesi için `Slider` GameObject'inin adını "Ana Ses Slider" gibi, değer metnini de "Ana Ses Value" şeklinde adlandırın.
+   - Her slider'ın yanında/altında yüzde değerini gösterecek bir `TextMeshPro - Text (UI)` oluşturun. `AudioSettingsView` slider'a göre otomatik olarak eşleşmesi için `Slider` GameObject'inin adını "Ana Ses Slider" gibi, değer metnini de "Ana Ses Value" şeklinde adlandırın.
    - En altta `Geri` adlı bir `Button`.
-4. Inspector'da `AudioSettingsView` üzerindeki `Master Slider`, `Music Slider`, `Sfx Slider` alanlarına ilgili slider'ları; değer etiketleri otomatik bulunmazsa `Master Value Label`, `Music Value Label`, `Sfx Value Label` alanlarına ilgili `Text` bileşenlerini atayın.
+4. Inspector'da `AudioSettingsView` üzerindeki `Master Slider`, `Music Slider`, `Sfx Slider` alanlarına ilgili slider'ları; değer etiketleri otomatik bulunmazsa `Master Value Label`, `Music Value Label`, `Sfx Value Label` alanlarına ilgili `TextMeshPro - Text (UI)` bileşenlerini atayın.
 
 ## 6. Ses Yöneticisi
 1. Sahne hiyerarşisinde boş bir GameObject oluşturun ve adını `Audio Settings Manager` yapın.

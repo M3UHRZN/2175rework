@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using TMPro;
 using UnityEngine.UI;
 
 namespace Game.Settings
@@ -12,9 +13,9 @@ namespace Game.Settings
         [SerializeField] private Slider masterSlider;
         [SerializeField] private Slider musicSlider;
         [SerializeField] private Slider sfxSlider;
-        [SerializeField] private Text masterValueLabel;
-        [SerializeField] private Text musicValueLabel;
-        [SerializeField] private Text sfxValueLabel;
+        [SerializeField] private TMP_Text masterValueLabel;
+        [SerializeField] private TMP_Text musicValueLabel;
+        [SerializeField] private TMP_Text sfxValueLabel;
 
         private AudioSettingsManager Manager => AudioSettingsManager.Instance;
 
@@ -142,7 +143,7 @@ namespace Game.Settings
             slider.onValueChanged.Invoke(slider.value);
         }
 
-        private static void UpdateValueLabel(Text label, float value)
+        private static void UpdateValueLabel(TMP_Text label, float value)
         {
             if (label == null)
             {
@@ -152,7 +153,7 @@ namespace Game.Settings
             label.text = Mathf.RoundToInt(value * 100f) + "%";
         }
 
-        private static Text FindValueLabel(Slider slider)
+        private static TMP_Text FindValueLabel(Slider slider)
         {
             if (slider == null)
             {
@@ -167,7 +168,7 @@ namespace Game.Settings
 
             var expectedName = slider.gameObject.name.Replace(" Slider", " Value");
             var candidate = parent.Find(expectedName);
-            return candidate != null ? candidate.GetComponent<Text>() : null;
+            return candidate != null ? candidate.GetComponent<TMP_Text>() : null;
         }
     }
 }
