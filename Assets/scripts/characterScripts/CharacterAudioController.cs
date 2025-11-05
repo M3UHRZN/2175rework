@@ -16,9 +16,6 @@ public class CharacterAudioController : MonoBehaviour
     [SerializeField] private AudioSource runFootstepSource;
     [SerializeField] private AudioClip runFootstepClip;
     [SerializeField] private float footstepSpeedThreshold = 0.25f;
-    [SerializeField] private float footstepMaxSpeed = 7.5f;
-    [SerializeField] private float footstepMinInterval = 0.18f;
-    [SerializeField] private float footstepMaxInterval = 0.45f;
 
     [Header("Climb")]
     [SerializeField] private AudioSource climbLoopSource;
@@ -39,8 +36,6 @@ public class CharacterAudioController : MonoBehaviour
     [SerializeField] private float wallJumpMinInterval = 0.1f;
 
     private readonly List<AudioSource> registeredSources = new();
-    private float footstepTimer;
-    private float lastFootstepTime = float.NegativeInfinity;
     private float lastJumpTime = float.NegativeInfinity;
     private float lastLandTime = float.NegativeInfinity;
     private float lastWallJumpTime = float.NegativeInfinity;
@@ -84,6 +79,7 @@ public class CharacterAudioController : MonoBehaviour
         }
 
         UnregisterSources();
+        StopLoop(runFootstepSource);
         StopLoop(climbLoopSource);
         StopLoop(wallClimbLoopSource);
         StopLoop(wallSlideLoopSource);
@@ -91,7 +87,7 @@ public class CharacterAudioController : MonoBehaviour
 
     private void Update()
     {
-        UpdateFootsteps(Time.deltaTime);
+        UpdateFootsteps();
     }
 
     private void HandleLocoChanged(PlayerStateMachine.LocoState previous, PlayerStateMachine.LocoState current)
@@ -139,36 +135,39 @@ public class CharacterAudioController : MonoBehaviour
         }
     }
 
-    private void UpdateFootsteps(float deltaTime)
+    private void UpdateFootsteps()
     {
         if (stateMachine == null || locomotionMotor == null || sensors == null)
         {
             return;
         }
 
-        if (stateMachine.Current != PlayerStateMachine.LocoState.Run || !sensors.isGrounded)
+        var shouldLoop = stateMachine.Current == PlayerStateMachine.LocoState.Run &&
+                         sensors.isGrounded &&
+                         Mathf.Abs(locomotionMotor.velocityX) >= footstepSpeedThreshold;
+
+        if (runFootstepSource == null)
         {
-            footstepTimer = 0f;
             return;
         }
 
-        var speed = Mathf.Abs(locomotionMotor.velocityX);
-        if (speed < footstepSpeedThreshold)
+        if (shouldLoop)
         {
-            footstepTimer = 0f;
-            return;
-        }
-
-        var interval = Mathf.Lerp(footstepMaxInterval, footstepMinInterval,
-            Mathf.Clamp01((speed - footstepSpeedThreshold) / Mathf.Max(0.01f, footstepMaxSpeed - footstepSpeedThreshold)));
-
-        footstepTimer += deltaTime;
-        if (footstepTimer >= interval && Time.time >= lastFootstepTime + footstepMinInterval)
-        {
-            if (TryPlayOneShot(runFootstepSource, runFootstepClip, ref lastFootstepTime, footstepMinInterval))
+            if (runFootstepClip != null && runFootstepSource.clip != runFootstepClip)
             {
-                footstepTimer = 0f;
+                runFootstepSource.clip = runFootstepClip;
             }
+
+            runFootstepSource.loop = true;
+
+            if (!runFootstepSource.isPlaying)
+            {
+                runFootstepSource.Play();
+            }
+        }
+        else if (runFootstepSource.isPlaying)
+        {
+            runFootstepSource.Stop();
         }
     }
 
