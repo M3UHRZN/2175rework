@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f6640c159706434e90efde580097589, type: 3}
+  m_Name: sohbet1
+  m_EditorClassIdentifier: 
+  lines:
+  - speakerId: elior
+    speakerDisplayName: elior
+    text: "dsfadsfasdfsfsahdf\u0131osadhfos\u0131dhf\u0131oash\u0131oasdhf\u0131"
+    movementLock: 0
+  - speakerId: elior
+    speakerDisplayName: elior
+    text: 21332914u2309472390472390742390472390472309472
+    movementLock: 0
+  onSequenceFinished:
+    m_PersistentCalls:
+      m_Calls: []
