@@ -26,7 +26,7 @@ public class DialogueManager : MonoBehaviour
     public InputActionReference advanceAction;
 
     [Header("Audio")]
-    [Tooltip("Diyalog başladığında çalınacak sesleri oynatmak için kullanılacak AudioSource.")]
+    [Tooltip("Her diyalog satırı başladığında çalınacak sesleri oynatmak için kullanılacak AudioSource.")]
     public AudioSource audioSource;
 
     [Tooltip("Yeni bir diyalog başladığında tetiklenecek olay.")]
@@ -113,7 +113,6 @@ public class DialogueManager : MonoBehaviour
         currentIndex = -1;
         waitingForTyping = false;
         pendingAutoAdvanceIndex = -1;
-        PlayStartAudio(sequence);
         onDialogueStarted?.Invoke(sequence);
         ShowNextLine();
         return true;
@@ -158,6 +157,7 @@ public class DialogueManager : MonoBehaviour
         pendingAutoAdvanceIndex = currentIndex;
         LockMovement(line);
         dialogueUI?.ShowLine(line.speakerDisplayName, line.speakerId, line.text, charactersPerSecond);
+        PlayLineAudio(line);
         onLineChanged?.Invoke(line);
         waitingForTyping = dialogueUI != null && dialogueUI.IsTyping;
         if (!waitingForTyping)
@@ -273,12 +273,12 @@ public class DialogueManager : MonoBehaviour
         ScheduleAutoAdvance(currentLine, currentIndex);
     }
 
-    void PlayStartAudio(DialogueSequence sequence)
+    void PlayLineAudio(DialogueSequence.DialogueLine line)
     {
-        if (audioSource == null || sequence == null || sequence.startClip == null)
+        if (audioSource == null || line == null || line.lineClip == null)
             return;
 
-        audioSource.PlayOneShot(sequence.startClip);
+        audioSource.PlayOneShot(line.lineClip);
     }
 
     public DialogueCharacterBinding GetBinding(string characterId)

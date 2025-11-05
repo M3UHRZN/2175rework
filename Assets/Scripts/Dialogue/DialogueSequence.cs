@@ -11,9 +11,6 @@ public class DialogueSequence : ScriptableObject
     [Tooltip("Konuşma tamamlandığında başka bir davranış tetiklemek için.")]
     public UnityEngine.Events.UnityEvent onSequenceFinished;
 
-    [Tooltip("Diyalog başladığında çalınacak ses.")]
-    public AudioClip startClip;
-
     [Serializable]
     public class DialogueLine
     {
@@ -32,6 +29,9 @@ public class DialogueSequence : ScriptableObject
 
         [Tooltip("> 0 ise satır bu süre sonunda otomatik olarak ilerler. 0 veya daha küçük değerler manuel ilerletme gerektirir.")]
         public float autoAdvanceDelay;
+
+        [Tooltip("Bu satır başladığında çalınacak ses efekti (isteğe bağlı).")]
+        public AudioClip lineClip;
     }
 }
 
