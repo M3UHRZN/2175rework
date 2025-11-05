@@ -1,5 +1,8 @@
+using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace Game.Settings
 {
@@ -8,10 +11,24 @@ namespace Game.Settings
         [SerializeField] private GameObject mainPanel;
         [SerializeField] private GameObject levelPanel;
         [SerializeField] private GameObject settingsPanel;
+        [SerializeField] private Button startButton;
+        [SerializeField] private Button settingsButton;
+        [SerializeField] private Button exitButton;
+        [SerializeField] private Button levelBackButton;
+        [SerializeField] private Button settingsBackButton;
+
+        private LevelButton[] levelButtons = Array.Empty<LevelButton>();
 
         private void Awake()
         {
+            CacheReferences();
+            RegisterButtonCallbacks();
             ShowMainPanel();
+        }
+
+        private void OnValidate()
+        {
+            CacheReferences();
         }
 
         public void Initialize(GameObject main, GameObject level, GameObject settings)
@@ -19,6 +36,8 @@ namespace Game.Settings
             mainPanel = main;
             levelPanel = level;
             settingsPanel = settings;
+            CacheReferences();
+            RegisterButtonCallbacks();
             ShowMainPanel();
         }
 
@@ -86,11 +105,100 @@ namespace Game.Settings
 
         public void QuitGame()
         {
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
-    #else
+#else
             Application.Quit();
-    #endif
+#endif
+        }
+
+        private void CacheReferences()
+        {
+            levelButtons = GetComponentsInChildren<LevelButton>(true);
+
+            mainPanel ??= FindChildGameObject(transform, "MainPanel", "Main Panel");
+            levelPanel ??= FindChildGameObject(transform, "LevelPanel", "Level Panel");
+            settingsPanel ??= FindChildGameObject(transform, "SettingsPanel", "Settings Panel");
+
+            if (mainPanel != null)
+            {
+                startButton ??= FindChildButton(mainPanel.transform, "StartButton", "Start Button");
+                settingsButton ??= FindChildButton(mainPanel.transform, "SettingsButton", "Settings Button");
+                exitButton ??= FindChildButton(mainPanel.transform, "ExitButton", "Exit Button", "Çıkış Button");
+            }
+
+            if (levelPanel != null)
+            {
+                levelBackButton ??= FindChildButton(levelPanel.transform, "BackButton", "Back Button", "Geri Button");
+            }
+
+            if (settingsPanel != null)
+            {
+                settingsBackButton ??= FindChildButton(settingsPanel.transform, "BackButton", "Back Button", "Geri Button");
+            }
+        }
+
+        private void RegisterButtonCallbacks()
+        {
+            ConfigureButton(startButton, ShowLevelPanel);
+            ConfigureButton(settingsButton, ShowSettingsPanel);
+            ConfigureButton(exitButton, QuitGame);
+            ConfigureButton(levelBackButton, ShowMainPanel);
+            ConfigureButton(settingsBackButton, ShowMainPanel);
+
+            if (levelButtons == null || levelButtons.Length == 0)
+            {
+                levelButtons = GetComponentsInChildren<LevelButton>(true);
+            }
+
+            foreach (var levelButton in levelButtons)
+            {
+                levelButton?.BindToMenu(this);
+            }
+        }
+
+        private static void ConfigureButton(Button button, UnityAction handler)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.onClick.RemoveListener(handler);
+            button.onClick.AddListener(handler);
+        }
+
+        internal void RegisterLevelButton(LevelButton button)
+        {
+            button?.BindToMenu(this);
+        }
+
+        private static GameObject FindChildGameObject(Transform parent, params string[] names)
+        {
+            foreach (var name in names)
+            {
+                var child = parent.Find(name);
+                if (child != null)
+                {
+                    return child.gameObject;
+                }
+            }
+
+            return null;
+        }
+
+        private static Button FindChildButton(Transform parent, params string[] names)
+        {
+            foreach (var name in names)
+            {
+                var child = parent.Find(name);
+                if (child != null && child.TryGetComponent(out Button button))
+                {
+                    return button;
+                }
+            }
+
+            return null;
         }
     }
 }

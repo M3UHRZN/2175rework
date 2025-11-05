@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace Game.Settings
@@ -11,11 +12,15 @@ namespace Game.Settings
         [SerializeField] private Slider masterSlider;
         [SerializeField] private Slider musicSlider;
         [SerializeField] private Slider sfxSlider;
+        [SerializeField] private Text masterValueLabel;
+        [SerializeField] private Text musicValueLabel;
+        [SerializeField] private Text sfxValueLabel;
 
         private AudioSettingsManager Manager => AudioSettingsManager.Instance;
 
         private void OnEnable()
         {
+            EnsureBindings();
             RefreshSliders();
         }
 
@@ -24,6 +29,7 @@ namespace Game.Settings
             masterSlider = master;
             musicSlider = music;
             sfxSlider = sfx;
+            EnsureBindings();
             RefreshSliders();
             NotifySliders();
         }
@@ -38,16 +44,19 @@ namespace Game.Settings
             if (masterSlider != null)
             {
                 masterSlider.SetValueWithoutNotify(Manager.MasterVolume);
+                UpdateValueLabel(masterValueLabel, Manager.MasterVolume);
             }
 
             if (musicSlider != null)
             {
                 musicSlider.SetValueWithoutNotify(Manager.MusicVolume);
+                UpdateValueLabel(musicValueLabel, Manager.MusicVolume);
             }
 
             if (sfxSlider != null)
             {
                 sfxSlider.SetValueWithoutNotify(Manager.SfxVolume);
+                UpdateValueLabel(sfxValueLabel, Manager.SfxVolume);
             }
         }
 
@@ -55,16 +64,19 @@ namespace Game.Settings
         {
             Manager?.SetMasterVolume(value);
             RefreshDependentSliders();
+            UpdateValueLabel(masterValueLabel, value);
         }
 
         public void OnMusicChanged(float value)
         {
             Manager?.SetMusicVolume(value);
+            UpdateValueLabel(musicValueLabel, value);
         }
 
         public void OnSfxChanged(float value)
         {
             Manager?.SetSfxVolume(value);
+            UpdateValueLabel(sfxValueLabel, value);
         }
 
         private void RefreshDependentSliders()
@@ -77,11 +89,13 @@ namespace Game.Settings
             if (musicSlider != null)
             {
                 musicSlider.SetValueWithoutNotify(Manager.MusicVolume);
+                UpdateValueLabel(musicValueLabel, Manager.MusicVolume);
             }
 
             if (sfxSlider != null)
             {
                 sfxSlider.SetValueWithoutNotify(Manager.SfxVolume);
+                UpdateValueLabel(sfxValueLabel, Manager.SfxVolume);
             }
         }
 
@@ -92,6 +106,32 @@ namespace Game.Settings
             NotifySlider(sfxSlider);
         }
 
+        private void EnsureBindings()
+        {
+            CacheValueLabels();
+            BindSlider(masterSlider, OnMasterChanged);
+            BindSlider(musicSlider, OnMusicChanged);
+            BindSlider(sfxSlider, OnSfxChanged);
+        }
+
+        private void CacheValueLabels()
+        {
+            masterValueLabel ??= FindValueLabel(masterSlider);
+            musicValueLabel ??= FindValueLabel(musicSlider);
+            sfxValueLabel ??= FindValueLabel(sfxSlider);
+        }
+
+        private static void BindSlider(Slider slider, UnityAction<float> callback)
+        {
+            if (slider == null)
+            {
+                return;
+            }
+
+            slider.onValueChanged.RemoveListener(callback);
+            slider.onValueChanged.AddListener(callback);
+        }
+
         private static void NotifySlider(Slider slider)
         {
             if (slider == null)
@@ -100,6 +140,34 @@ namespace Game.Settings
             }
 
             slider.onValueChanged.Invoke(slider.value);
+        }
+
+        private static void UpdateValueLabel(Text label, float value)
+        {
+            if (label == null)
+            {
+                return;
+            }
+
+            label.text = Mathf.RoundToInt(value * 100f) + "%";
+        }
+
+        private static Text FindValueLabel(Slider slider)
+        {
+            if (slider == null)
+            {
+                return null;
+            }
+
+            var parent = slider.transform.parent;
+            if (parent == null)
+            {
+                return null;
+            }
+
+            var expectedName = slider.gameObject.name.Replace(" Slider", " Value");
+            var candidate = parent.Find(expectedName);
+            return candidate != null ? candidate.GetComponent<Text>() : null;
         }
     }
 }

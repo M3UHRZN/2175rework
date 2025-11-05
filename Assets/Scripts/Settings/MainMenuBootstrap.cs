@@ -8,6 +8,7 @@ namespace Game.UI
     /// <summary>
     /// Creates the main menu interface at runtime so the scene can remain lightweight in source control.
     /// </summary>
+    [ExecuteAlways]
     [RequireComponent(typeof(Camera))]
     public class MainMenuBootstrap : MonoBehaviour
     {
@@ -15,14 +16,15 @@ namespace Game.UI
 
         private void Start()
         {
-            if (FindObjectOfType<MainMenuUI>() != null)
-            {
-                return;
-            }
+            BuildIfNeeded(true);
+        }
 
-            EnsureEventSystem();
-            EnsureAudioSettingsManager();
-            BuildMenu();
+        private void OnEnable()
+        {
+            if (!Application.isPlaying)
+            {
+                BuildIfNeeded(false);
+            }
         }
 
         private void EnsureEventSystem()
@@ -46,7 +48,24 @@ namespace Game.UI
             managerGo.AddComponent<AudioSettingsManager>();
         }
 
-        private void BuildMenu()
+        private void BuildIfNeeded(bool ensureAudioManager)
+        {
+            if (FindObjectOfType<MainMenuUI>() != null)
+            {
+                return;
+            }
+
+            EnsureEventSystem();
+
+            if (ensureAudioManager)
+            {
+                EnsureAudioSettingsManager();
+            }
+
+            CreateMenu();
+        }
+
+        private void CreateMenu()
         {
             var canvasGo = new GameObject("Main Menu Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(MainMenuUI));
             var canvas = canvasGo.GetComponent<Canvas>();
@@ -219,6 +238,7 @@ namespace Game.UI
             slider.direction = Slider.Direction.LeftToRight;
 
             var valueText = CreateLabel(container.GetComponent<RectTransform>(), Mathf.RoundToInt(initialValue * 100f) + "%", 18);
+            valueText.gameObject.name = label + " Value";
 
             slider.onValueChanged.AddListener(v => valueText.text = Mathf.RoundToInt(v * 100f) + "%");
             slider.onValueChanged.Invoke(initialValue);
