@@ -66,3 +66,6 @@ TagManager:
     locked: 0
   m_RenderingLayers:
   - Default
+  - Tilemap_back
+  - Boru_platform
+  - Tile
