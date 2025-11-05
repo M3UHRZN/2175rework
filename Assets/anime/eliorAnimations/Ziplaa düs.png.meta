@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 2d15998ad5e9a0f43b910f4e10427e2e
+guid: a041a221e760fd845b77bfa5f2587078
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -106,10 +106,10 @@ TextureImporter:
       name: "Ziplaa du\u0308s_0"
       rect:
         serializedVersion: 2
-        x: 79
-        y: 9
-        width: 162
-        height: 282
+        x: 0
+        y: 0
+        width: 320
+        height: 320
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,10 +128,10 @@ TextureImporter:
       name: "Ziplaa du\u0308s_1"
       rect:
         serializedVersion: 2
-        x: 389
+        x: 320
         y: 0
-        width: 182
-        height: 301
+        width: 320
+        height: 320
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -150,7 +150,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 3b6db3ec9327bb643886dcbe889f6967
     internalID: 0
     vertices: []
     indices: 
