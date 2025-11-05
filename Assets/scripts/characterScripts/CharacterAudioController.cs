@@ -4,7 +4,6 @@ using Game.Settings;
 [RequireComponent(typeof(PlayerStateMachine))]
 [RequireComponent(typeof(LocomotionMotor2D))]
 [RequireComponent(typeof(Sensors2D))]
-[RequireComponent(typeof(AudioSource))]
 public class CharacterAudioController : MonoBehaviour
 {
     [Header("Dependencies")]
@@ -52,7 +51,6 @@ public class CharacterAudioController : MonoBehaviour
         stateMachine = GetComponent<PlayerStateMachine>();
         locomotionMotor = GetComponent<LocomotionMotor2D>();
         sensors = GetComponent<Sensors2D>();
-        audioSource = GetComponent<AudioSource>();
     }
 
     private void Awake()
@@ -333,11 +331,6 @@ public class CharacterAudioController : MonoBehaviour
         if (!sensors)
         {
             sensors = GetComponent<Sensors2D>();
-        }
-
-        if (!audioSource)
-        {
-            audioSource = GetComponent<AudioSource>();
         }
     }
 
