@@ -16,16 +16,24 @@ public class CharacterAudioController : MonoBehaviour
     [SerializeField] private AudioSource runFootstepSource;
     [SerializeField] private AudioClip runFootstepClip;
     [SerializeField] private float footstepSpeedThreshold = 0.25f;
+    [Tooltip("Minimum seconds to keep the run loop active once it starts.")]
+    [SerializeField] private float runLoopMinDuration = 0.1f;
 
     [Header("Climb")]
     [SerializeField] private AudioSource climbLoopSource;
     [SerializeField] private AudioClip climbLoopClip;
+    [Tooltip("Minimum seconds to keep the climb loop active once it starts.")]
+    [SerializeField] private float climbLoopMinDuration = 0.1f;
 
     [Header("Wall Movement")]
     [SerializeField] private AudioSource wallClimbLoopSource;
     [SerializeField] private AudioClip wallClimbLoopClip;
     [SerializeField] private AudioSource wallSlideLoopSource;
     [SerializeField] private AudioClip wallSlideLoopClip;
+    [Tooltip("Minimum seconds to keep the wall climb loop active once it starts.")]
+    [SerializeField] private float wallClimbLoopMinDuration = 0.1f;
+    [Tooltip("Minimum seconds to keep the wall slide loop active once it starts.")]
+    [SerializeField] private float wallSlideLoopMinDuration = 0.1f;
 
     [Header("Airborne")]
     [SerializeField] private AudioSource jumpSource;
@@ -39,9 +47,18 @@ public class CharacterAudioController : MonoBehaviour
     [SerializeField] private float wallJumpMinInterval = 0.1f;
 
     private readonly List<AudioSource> registeredSources = new();
+    private readonly Dictionary<AudioSource, LoopRuntimeState> loopStates = new();
+    private readonly List<AudioSource> loopStateKeys = new();
     private float lastJumpTime = float.NegativeInfinity;
     private float lastLandTime = float.NegativeInfinity;
     private float lastWallJumpTime = float.NegativeInfinity;
+
+    private struct LoopRuntimeState
+    {
+        public float LastStartTime;
+        public float MinDuration;
+        public bool PendingStop;
+    }
 
     private void Awake()
     {
@@ -88,10 +105,13 @@ public class CharacterAudioController : MonoBehaviour
         }
 
         UnregisterSources();
-        StopLoop(runFootstepSource);
-        StopLoop(climbLoopSource);
-        StopLoop(wallClimbLoopSource);
-        StopLoop(wallSlideLoopSource);
+        StopLoop(runFootstepSource, true);
+        StopLoop(climbLoopSource, true);
+        StopLoop(wallClimbLoopSource, true);
+        StopLoop(wallSlideLoopSource, true);
+
+        loopStates.Clear();
+        loopStateKeys.Clear();
     }
 
     private void Update()
@@ -102,6 +122,7 @@ public class CharacterAudioController : MonoBehaviour
         }
 
         UpdateFootsteps();
+        UpdatePendingLoopStops();
     }
 
     private void HandleLocoChanged(PlayerStateMachine.LocoState previous, PlayerStateMachine.LocoState current)
@@ -122,13 +143,13 @@ public class CharacterAudioController : MonoBehaviour
         switch (current)
         {
             case PlayerStateMachine.LocoState.Climb:
-                StartLoop(climbLoopSource, climbLoopClip);
+                StartLoop(climbLoopSource, climbLoopClip, climbLoopMinDuration);
                 break;
             case PlayerStateMachine.LocoState.WallClimb:
-                StartLoop(wallClimbLoopSource, wallClimbLoopClip);
+                StartLoop(wallClimbLoopSource, wallClimbLoopClip, wallClimbLoopMinDuration);
                 break;
             case PlayerStateMachine.LocoState.WallSlide:
-                StartLoop(wallSlideLoopSource, wallSlideLoopClip);
+                StartLoop(wallSlideLoopSource, wallSlideLoopClip, wallSlideLoopMinDuration);
                 break;
             case PlayerStateMachine.LocoState.JumpRise:
                 TryPlayClip(jumpSource, jumpClip, ref lastJumpTime, jumpMinInterval);
@@ -167,26 +188,11 @@ public class CharacterAudioController : MonoBehaviour
 
         if (shouldLoop)
         {
-            if (runFootstepClip != null && runFootstepSource.clip != runFootstepClip)
-            {
-                runFootstepSource.clip = runFootstepClip;
-            }
-
-            runFootstepSource.loop = true;
-
-            if (!runFootstepSource.isPlaying)
-            {
-                runFootstepSource.Play();
-            }
+            StartLoop(runFootstepSource, runFootstepClip, runLoopMinDuration);
         }
         else
         {
-            if (runFootstepSource.isPlaying)
-            {
-                runFootstepSource.Stop();
-            }
-
-            runFootstepSource.loop = false;
+            StopLoop(runFootstepSource);
         }
     }
 
@@ -225,15 +231,18 @@ public class CharacterAudioController : MonoBehaviour
         return true;
     }
 
-    private static void StartLoop(AudioSource source, AudioClip clip)
+    private void StartLoop(AudioSource source, AudioClip clip, float minDuration)
     {
         if (source == null)
         {
             return;
         }
 
+        bool clipChanged = false;
+
         if (clip != null && source.clip != clip)
         {
+            clipChanged = true;
             source.clip = clip;
         }
 
@@ -244,25 +253,113 @@ public class CharacterAudioController : MonoBehaviour
 
         source.loop = true;
 
+        if (clipChanged && source.isPlaying)
+        {
+            source.Stop();
+        }
+
+        var state = loopStates.TryGetValue(source, out var existingState) ? existingState : new LoopRuntimeState
+        {
+            LastStartTime = float.NegativeInfinity
+        };
+
+        state.MinDuration = Mathf.Max(0f, minDuration);
+        state.PendingStop = false;
+
         if (!source.isPlaying)
         {
             source.Play();
+            state.LastStartTime = Time.time;
         }
+        else if (float.IsNegativeInfinity(state.LastStartTime))
+        {
+            state.LastStartTime = Time.time;
+        }
+
+        loopStates[source] = state;
     }
 
-    private static void StopLoop(AudioSource source)
+    private void StopLoop(AudioSource source, bool immediate = false)
     {
         if (source == null)
         {
             return;
         }
 
+        if (!loopStates.TryGetValue(source, out var state))
+        {
+            state = new LoopRuntimeState
+            {
+                LastStartTime = float.NegativeInfinity,
+                MinDuration = 0f,
+                PendingStop = false
+            };
+        }
+
+        if (immediate || !source.isPlaying || Time.time >= state.LastStartTime + state.MinDuration)
+        {
+            FinalizeLoopStop(source, ref state);
+        }
+        else
+        {
+            state.PendingStop = true;
+            loopStates[source] = state;
+        }
+    }
+
+    private void FinalizeLoopStop(AudioSource source, ref LoopRuntimeState state)
+    {
         source.loop = false;
 
         if (source.isPlaying)
         {
             source.Stop();
         }
+
+        state.PendingStop = false;
+        state.LastStartTime = float.NegativeInfinity;
+        loopStates[source] = state;
+    }
+
+    private void UpdatePendingLoopStops()
+    {
+        if (loopStates.Count == 0)
+        {
+            return;
+        }
+
+        loopStateKeys.Clear();
+        foreach (var key in loopStates.Keys)
+        {
+            loopStateKeys.Add(key);
+        }
+
+        foreach (var source in loopStateKeys)
+        {
+            if (source == null)
+            {
+                loopStates.Remove(source);
+                continue;
+            }
+
+            var state = loopStates[source];
+
+            if (!state.PendingStop)
+            {
+                continue;
+            }
+
+            if (!source.isPlaying || Time.time >= state.LastStartTime + state.MinDuration)
+            {
+                FinalizeLoopStop(source, ref state);
+            }
+            else
+            {
+                loopStates[source] = state;
+            }
+        }
+
+        loopStateKeys.Clear();
     }
 
     private bool IsLandingTransition(PlayerStateMachine.LocoState previous, PlayerStateMachine.LocoState current)
@@ -335,13 +432,13 @@ public class CharacterAudioController : MonoBehaviour
         switch (current)
         {
             case PlayerStateMachine.LocoState.Climb:
-                StartLoop(climbLoopSource, climbLoopClip);
+                StartLoop(climbLoopSource, climbLoopClip, climbLoopMinDuration);
                 break;
             case PlayerStateMachine.LocoState.WallClimb:
-                StartLoop(wallClimbLoopSource, wallClimbLoopClip);
+                StartLoop(wallClimbLoopSource, wallClimbLoopClip, wallClimbLoopMinDuration);
                 break;
             case PlayerStateMachine.LocoState.WallSlide:
-                StartLoop(wallSlideLoopSource, wallSlideLoopClip);
+                StartLoop(wallSlideLoopSource, wallSlideLoopClip, wallSlideLoopMinDuration);
                 break;
         }
     }
