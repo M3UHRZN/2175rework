@@ -19,10 +19,13 @@ public class CharacterAudioController : MonoBehaviour
 
     [Header("Climb")]
     [SerializeField] private AudioSource climbLoopSource;
+    [SerializeField] private AudioClip climbLoopClip;
 
     [Header("Wall Movement")]
     [SerializeField] private AudioSource wallClimbLoopSource;
+    [SerializeField] private AudioClip wallClimbLoopClip;
     [SerializeField] private AudioSource wallSlideLoopSource;
+    [SerializeField] private AudioClip wallSlideLoopClip;
 
     [Header("Airborne")]
     [SerializeField] private AudioSource jumpSource;
@@ -108,22 +111,22 @@ public class CharacterAudioController : MonoBehaviour
         switch (current)
         {
             case PlayerStateMachine.LocoState.Climb:
-                StartLoop(climbLoopSource);
+                StartLoop(climbLoopSource, climbLoopClip);
                 break;
             case PlayerStateMachine.LocoState.WallClimb:
-                StartLoop(wallClimbLoopSource);
+                StartLoop(wallClimbLoopSource, wallClimbLoopClip);
                 break;
             case PlayerStateMachine.LocoState.WallSlide:
-                StartLoop(wallSlideLoopSource);
+                StartLoop(wallSlideLoopSource, wallSlideLoopClip);
                 break;
             case PlayerStateMachine.LocoState.JumpRise:
-                TryPlayOneShot(jumpSource, jumpClip, ref lastJumpTime, jumpMinInterval);
+                TryPlayClip(jumpSource, jumpClip, ref lastJumpTime, jumpMinInterval);
                 break;
         }
 
         if (IsLandingTransition(previous, current))
         {
-            TryPlayOneShot(landSource, landClip, ref lastLandTime, landMinInterval);
+            TryPlayClip(landSource, landClip, ref lastLandTime, landMinInterval);
         }
     }
 
@@ -131,7 +134,7 @@ public class CharacterAudioController : MonoBehaviour
     {
         if (phase == PlayerStateMachine.PhaseState.WallJump)
         {
-            TryPlayOneShot(wallJumpSource, wallJumpClip, ref lastWallJumpTime, wallJumpMinInterval);
+            TryPlayClip(wallJumpSource, wallJumpClip, ref lastWallJumpTime, wallJumpMinInterval);
         }
     }
 
@@ -165,13 +168,18 @@ public class CharacterAudioController : MonoBehaviour
                 runFootstepSource.Play();
             }
         }
-        else if (runFootstepSource.isPlaying)
+        else
         {
-            runFootstepSource.Stop();
+            if (runFootstepSource.isPlaying)
+            {
+                runFootstepSource.Stop();
+            }
+
+            runFootstepSource.loop = false;
         }
     }
 
-    private bool TryPlayOneShot(AudioSource source, AudioClip clip, ref float lastTime, float minInterval)
+    private bool TryPlayClip(AudioSource source, AudioClip clip, ref float lastTime, float minInterval)
     {
         if (source == null)
         {
@@ -183,22 +191,49 @@ public class CharacterAudioController : MonoBehaviour
             return false;
         }
 
-        if (clip != null)
+        if (clip != null && source.clip != clip)
         {
-            source.PlayOneShot(clip);
+            source.clip = clip;
         }
-        else if (!source.isPlaying)
+
+        if (source.clip == null)
         {
-            source.Play();
+            return false;
         }
+
+        source.loop = false;
+
+        if (source.isPlaying)
+        {
+            source.Stop();
+        }
+
+        source.Play();
 
         lastTime = Time.time;
         return true;
     }
 
-    private static void StartLoop(AudioSource source)
+    private static void StartLoop(AudioSource source, AudioClip clip)
     {
-        if (source != null && !source.isPlaying)
+        if (source == null)
+        {
+            return;
+        }
+
+        if (clip != null && source.clip != clip)
+        {
+            source.clip = clip;
+        }
+
+        if (source.clip == null)
+        {
+            return;
+        }
+
+        source.loop = true;
+
+        if (!source.isPlaying)
         {
             source.Play();
         }
@@ -206,7 +241,14 @@ public class CharacterAudioController : MonoBehaviour
 
     private static void StopLoop(AudioSource source)
     {
-        if (source != null && source.isPlaying)
+        if (source == null)
+        {
+            return;
+        }
+
+        source.loop = false;
+
+        if (source.isPlaying)
         {
             source.Stop();
         }
@@ -282,13 +324,13 @@ public class CharacterAudioController : MonoBehaviour
         switch (current)
         {
             case PlayerStateMachine.LocoState.Climb:
-                StartLoop(climbLoopSource);
+                StartLoop(climbLoopSource, climbLoopClip);
                 break;
             case PlayerStateMachine.LocoState.WallClimb:
-                StartLoop(wallClimbLoopSource);
+                StartLoop(wallClimbLoopSource, wallClimbLoopClip);
                 break;
             case PlayerStateMachine.LocoState.WallSlide:
-                StartLoop(wallSlideLoopSource);
+                StartLoop(wallSlideLoopSource, wallSlideLoopClip);
                 break;
         }
     }
