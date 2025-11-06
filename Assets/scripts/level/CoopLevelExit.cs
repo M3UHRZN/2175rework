@@ -293,7 +293,27 @@ public class CoopLevelExit : MonoBehaviour
         PruneInvalidContacts(eliorContacts);
         PruneInvalidContacts(simContacts);
 
-        bool ready = elior && sim && eliorContacts.Count > 0 && simContacts.Count > 0;
+        // Merge durumunu kontrol et
+        bool isMerged = partyController != null && partyController.IsMerged;
+
+        // Merge durumunda: Sadece Elior'un trigger içinde olması yeterli (Sim zaten Elior ile birleşik)
+        // Split durumunda: Her iki karakterin de trigger içinde olması gerekiyor
+        bool ready = elior && eliorContacts.Count > 0;
+        if (ready)
+        {
+            if (isMerged)
+            {
+                // Merge durumunda: Sim referansı olması yeterli, collider kontrolü gerekmez
+                ready = sim != null;
+            }
+            else
+            {
+                // Split durumunda: Her iki karakterin de trigger içinde olması gerekiyor
+                ready = sim != null && simContacts.Count > 0;
+            }
+        }
+
+        // Eğer requireSplitState aktifse, merge durumunda çalışmamalı
         if (ready && requireSplitState)
         {
             if (partyController)

@@ -21,9 +21,9 @@ MonoBehaviour:
     lineClip: {fileID: 8300000, guid: bb1c412fe608c544aa318ada23d5d01e, type: 3}
   - speakerId: Sim
     speakerDisplayName: Sim
-    text: "Asans\xF6rdeyken beni b\u0131rak."
+    text: "Asans\xF6re beraber binmeliyiz."
     movementLock: 0
-    autoAdvanceDelay: 0
+    autoAdvanceDelay: 4
     lineClip: {fileID: 8300000, guid: bb1c412fe608c544aa318ada23d5d01e, type: 3}
   onSequenceFinished:
     m_PersistentCalls:
