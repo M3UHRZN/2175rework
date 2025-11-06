@@ -27,7 +27,7 @@ MonoBehaviour:
     lineClip: {fileID: 0}
   - speakerId: elior
     speakerDisplayName: 
-    text: "D\xFCnya gittik\xE7e boku yedi"
+    text: "neyse daha k\xF6t\xFC g\xFCnlerim de oldu."
     movementLock: 0
     autoAdvanceDelay: 3
     lineClip: {fileID: 0}

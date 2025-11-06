@@ -41011,6 +41011,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 946758984}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2019872774
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2019872775}
+  m_Layer: 8
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2019872775
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2019872774}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -13.5412, y: 0, z: 0}
+  m_LocalScale: {x: 72.92, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2029855698
 GameObject:
   m_ObjectHideFlags: 0
@@ -57633,6 +57664,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -20.69
       objectReference: {fileID: 0}
+    - target: {fileID: 4666355697528914763, guid: 6037f0a0cd9117a4ea71b1cf5c664830, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 550fbbb50b957f34f9c2cfc56be757a1, type: 2}
     - target: {fileID: 5068780855959649412, guid: 6037f0a0cd9117a4ea71b1cf5c664830, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.9710007
@@ -57648,7 +57683,7 @@ PrefabInstance:
     - target: {fileID: 5264128006732085472, guid: 6037f0a0cd9117a4ea71b1cf5c664830, type: 3}
       propertyPath: eliorSplitController
       value: 
-      objectReference: {fileID: 9100000, guid: 3959c034f23c0f448bcef554d7301bd1, type: 2}
+      objectReference: {fileID: 9100000, guid: 550fbbb50b957f34f9c2cfc56be757a1, type: 2}
     - target: {fileID: 5264128006732085472, guid: 6037f0a0cd9117a4ea71b1cf5c664830, type: 3}
       propertyPath: eliorMergedController
       value: 
@@ -58541,6 +58576,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 619394802}
+  - {fileID: 2019872775}
   - {fileID: 1909113403}
   - {fileID: 2119904056}
   - {fileID: 6599391364878960048}
