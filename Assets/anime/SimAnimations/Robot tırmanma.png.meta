@@ -1,13 +1,22 @@
 fileFormatVersion: 2
-guid: 2da5060080dc6ad42b26fce10961bdb0
+guid: db65ef041cbea114aa5de5f8e2d54d49
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7709045187503265501
-    second: lamps_0
+      213: 6608974001782514827
+    second: "Robot t\u0131rmanma_0"
   - first:
-      213: -7133718690516275112
-    second: lamps_1
+      213: -5261604138706705552
+    second: "Robot t\u0131rmanma_1"
+  - first:
+      213: -1708179629599441686
+    second: "Robot t\u0131rmanma_2"
+  - first:
+      213: 3236762890899321123
+    second: "Robot t\u0131rmanma_3"
+  - first:
+      213: 8100127790863727671
+    second: "Robot t\u0131rmanma_4"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -40,7 +49,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -54,7 +63,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 14
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -103,13 +112,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: lamps_0
+      name: "Robot t\u0131rmanma_0"
       rect:
         serializedVersion: 2
-        x: 1
-        y: 7
-        width: 49
-        height: 8
+        x: 110
+        y: 0
+        width: 320
+        height: 320
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -118,20 +127,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: dd61196f0c70cfa60800000000000000
-      internalID: 7709045187503265501
+      spriteID: b84e90ab6dac7bb50800000000000000
+      internalID: 6608974001782514827
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: lamps_1
+      name: "Robot t\u0131rmanma_1"
       rect:
         serializedVersion: 2
-        x: 70
-        y: 1
-        width: 17
-        height: 14
+        x: 419
+        y: 0
+        width: 320
+        height: 320
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -140,8 +149,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8507634a5a0fffc90800000000000000
-      internalID: -7133718690516275112
+      spriteID: 07369abb9e60bf6b0800000000000000
+      internalID: -5261604138706705552
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Robot t\u0131rmanma_2"
+      rect:
+        serializedVersion: 2
+        x: 742
+        y: 0
+        width: 320
+        height: 320
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aecba2d5da35b48e0800000000000000
+      internalID: -1708179629599441686
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Robot t\u0131rmanma_3"
+      rect:
+        serializedVersion: 2
+        x: 1059
+        y: 0
+        width: 320
+        height: 320
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 321783e33ba4bec20800000000000000
+      internalID: 3236762890899321123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "Robot t\u0131rmanma_4"
+      rect:
+        serializedVersion: 2
+        x: 1476
+        y: 0
+        width: 124
+        height: 320
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73cb3b93f4f696070800000000000000
+      internalID: 8100127790863727671
       vertices: []
       indices: 
       edges: []
@@ -150,7 +225,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 714fdc68e65ea404e957614d3c1aa571
+    spriteID: 608ee968af91b524f9ad9d9bfaa241fa
     internalID: 0
     vertices: []
     indices: 
@@ -160,8 +235,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      lamps_0: 7709045187503265501
-      lamps_1: -7133718690516275112
+      "Robot t\u0131rmanma_0": 6608974001782514827
+      "Robot t\u0131rmanma_1": -5261604138706705552
+      "Robot t\u0131rmanma_2": -1708179629599441686
+      "Robot t\u0131rmanma_3": 3236762890899321123
+      "Robot t\u0131rmanma_4": 8100127790863727671
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

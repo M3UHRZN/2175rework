@@ -14,6 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - speakerId: Sim
+    speakerDisplayName: '    '
+    text: '     '
+    movementLock: 2
+    autoAdvanceDelay: 0.001
+    lineClip: {fileID: 8300000, guid: 8f1959fab28a9c9428bf6f5a1190674f, type: 3}
+  - speakerId: Sim
     speakerDisplayName: Sim
     text: "Hey ya\u015Fam formu. Burada her \u015Fey metal yiyecek bir \u015Fey pek
       yok ama sana g\xF6stermem gereken bir \u015Fey var."
@@ -39,7 +45,7 @@ MonoBehaviour:
     lineClip: {fileID: 8300000, guid: 69eac950ca9feb645b47c1f0b1db0810, type: 3}
   - speakerId: Elior
     speakerDisplayName: Elior
-    text: "Tamam seninle gelece\u011Fim."
+    text: hmmm
     movementLock: 2
     autoAdvanceDelay: 5
     lineClip: {fileID: 0}
