@@ -614,7 +614,7 @@ MonoBehaviour:
   m_text: Oyna
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1bfd0bdd4c16ecf40abfa840497649dc, type: 2}
-  m_sharedMaterial: {fileID: -7913500856654833372, guid: 1bfd0bdd4c16ecf40abfa840497649dc, type: 2}
+  m_sharedMaterial: {fileID: 2497046981963687778, guid: 1bfd0bdd4c16ecf40abfa840497649dc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1870,9 +1870,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a60a7d23bc94dd2848773f499f6eeae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultMasterVolume: 0.797
-  defaultMusicVolume: 0.8
-  defaultSfxVolume: 0.8
+  defaultMasterVolume: 0.546
+  defaultMusicVolume: 0.477
+  defaultSfxVolume: 0.154
 --- !u!4 &345704595
 Transform:
   m_ObjectHideFlags: 0
@@ -2844,11 +2844,11 @@ MonoBehaviour:
   - sceneName: level1
     clip: {fileID: 8300000, guid: 622fed8ec884b694b8e2eb7968a42b8d, type: 3}
     loop: 1
-    startTime: 80
-  - sceneName: level2
-    clip: {fileID: 8300000, guid: 178b776aeff1ffd4bac9970cafbe3b29, type: 3}
+    startTime: 60
+  - sceneName: LevelCengo2
+    clip: {fileID: 8300000, guid: 5b807ef9e3c861546b370ae5fdabdd1f, type: 3}
     loop: 1
-    startTime: 80
+    startTime: 0
   defaultMenuMusic: {fileID: 0}
   defaultGameMusic: {fileID: 0}
   playOnStart: 1
@@ -2915,7 +2915,7 @@ MonoBehaviour:
 '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1bfd0bdd4c16ecf40abfa840497649dc, type: 2}
-  m_sharedMaterial: {fileID: -7913500856654833372, guid: 1bfd0bdd4c16ecf40abfa840497649dc, type: 2}
+  m_sharedMaterial: {fileID: 2497046981963687778, guid: 1bfd0bdd4c16ecf40abfa840497649dc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3576,7 +3576,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b4f9d6f4a9e4e88a46664f1ed25e4db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneName: 
+  sceneName: levellock
   lockIcon: {fileID: 0}
   lockedColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &651954941
@@ -7974,7 +7974,7 @@ MonoBehaviour:
   m_text: "\xC7\u0131k\u0131\u015F"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1bfd0bdd4c16ecf40abfa840497649dc, type: 2}
-  m_sharedMaterial: {fileID: -7913500856654833372, guid: 1bfd0bdd4c16ecf40abfa840497649dc, type: 2}
+  m_sharedMaterial: {fileID: 2497046981963687778, guid: 1bfd0bdd4c16ecf40abfa840497649dc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -10915,7 +10915,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b4f9d6f4a9e4e88a46664f1ed25e4db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneName: level2
+  sceneName: LevelCengo2
   lockIcon: {fileID: 1769859045}
   lockedColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &2051222050
